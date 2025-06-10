@@ -1,18 +1,20 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "ESNext",
+    "module": "NodeNext",
     "lib": ["ES2022"],
-    "moduleResolution": "node",
+    "moduleResolution": "NodeNext",
     "allowJs": false,
     "checkJs": false,
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": ".",
     "removeComments": false,
     "importHelpers": true,
+    "isolatedModules": true,
+    
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
@@ -25,6 +27,7 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
+    
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
@@ -35,20 +38,25 @@
     "noImplicitThis": true,
     "noImplicitOverride": true,
     "exactOptionalPropertyTypes": true,
+    
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
     "noPropertyAccessFromIndexSignature": true,
+    
     "noEmitOnError": true,
     "preserveConstEnums": true,
+    
+    "experimentalDecorators": false,
+    "emitDecoratorMetadata": false,
+    
     "skipLibCheck": true,
     "incremental": true
   },
   "include": [
-    "src/**/*",
+    "server/src/**/*",
     "client/src/**/*",
-    "server/src/**/*", 
     "shared/src/**/*"
   ],
   "exclude": [
@@ -56,7 +64,6 @@
     "dist",
     "tests",
     "**/*.test.ts",
-    "**/*.test.tsx",
-    "**/simulations/**/*"
+    "**/*.test.tsx"
   ]
 }

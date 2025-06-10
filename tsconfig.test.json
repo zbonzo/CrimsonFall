@@ -1,0 +1,28 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "lib": ["ES2022"],
+    "types": ["jest", "node"],
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noImplicitAny": false,
+    "declaration": false,
+    "sourceMap": false,
+    "outDir": "./dist/tests",
+    "rootDir": "."
+  },
+  "include": [
+    "tests/**/*",
+    "server/src/**/*",
+    "client/src/**/*",
+    "shared/src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}

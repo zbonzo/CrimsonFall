@@ -1,6 +1,8 @@
 # Dependencies
 node_modules/
 */node_modules/
+tsconfig.tsbuildinfo
+*/tsconfig.tsbuildinfo
 
 # Build outputs
 dist/
