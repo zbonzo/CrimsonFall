@@ -41,6 +41,11 @@ export const ORIGIN_HEX: HexCoordinate = { q: 0, r: 0, s: 0 } as const;
  */
 export function createHexCoordinate(q: number, r: number): HexCoordinate {
   const s = -q - r;
+
+  if (Math.abs(q + r + s) > Number.EPSILON) {
+    throw new Error(`Invalid hex coordinates created: q=${q}, r=${r}, s=${s} do not sum to zero.`);
+  }
+
   // Handle JavaScript's -0 vs 0 issue
   return { 
     q: q === 0 ? 0 : q, 
@@ -53,7 +58,7 @@ export function createHexCoordinate(q: number, r: number): HexCoordinate {
  * Validates that a hex coordinate follows the cube coordinate constraint
  */
 export function isValidHexCoordinate(hex: HexCoordinate): boolean {
-  return Math.abs(hex.q + hex.r + hex.s) <= Number.EPSILON;
+  return Math.abs(hex.q + hex.r + hex.s) < Number.EPSILON;
 }
 
 /**
@@ -84,6 +89,22 @@ export function getHexNeighbors(hex: HexCoordinate): HexCoordinate[] {
  */
 export function hexToDisplayString(hex: HexCoordinate): string {
   return `(${hex.q}, ${hex.r})`;
+}
+
+/**
+ * Converts hex coordinate to obstacle string format
+ * Uses all three coordinates to prevent collisions with malformed data
+ */
+export function hexToObstacleString(hex: HexCoordinate): string {
+  return `${hex.q},${hex.r},${hex.s}`;
+}
+
+/**
+ * Converts hex coordinate to simple string format (for backward compatibility)
+ * WARNING: Only use when you're certain all hexes are valid (q + r + s = 0)
+ */
+export function hexToSimpleString(hex: HexCoordinate): string {
+  return `${hex.q},${hex.r}`;
 }
 
 /**

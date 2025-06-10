@@ -19,9 +19,12 @@ import {
  * Gets all hex coordinates within specified range of origin
  */
 export function getHexesInRange(origin: HexCoordinate, range: MovementRange): HexCoordinate[] {
-  if (!Number.isInteger(range) || range < 0) {
-     throw new Error('Range must be a non-negative integer');
-   }
+   if (!Number.isInteger(range)) {
+    throw new Error('Range must be an integer');
+  }
+    if (range < 0) {
+    throw new Error('Range must be non-negative');
+  }
   
   const hexesInRange: HexCoordinate[] = [];
   
@@ -49,6 +52,9 @@ export function isHexInRing(hex: HexCoordinate, center: HexCoordinate, ringRadiu
  * Gets all hex coordinates forming a ring at specified distance
  */
 export function getHexRing(center: HexCoordinate, radius: number): HexCoordinate[] {
+    if (!Number.isInteger(radius)) {
+    throw new Error('Radius must be an integer');
+  }
   if (radius === 0) {
     return [center];
   }

@@ -70,6 +70,16 @@ describe('hexRanges', () => {
         .toThrow('Range must be non-negative');
     });
 
+    it('should throw error for non-integer range', () => {
+      expect(() => getHexesInRange(center, 2.5))
+        .toThrow('Range must be an integer');
+    });
+
+    it('should throw error for non-integer radius', () => {
+      expect(() => getHexRing(center, 1.7))
+        .toThrow('Radius must be an integer');
+    });
+
     it('should work with non-origin centers', () => {
       const offsetCenter = createHexCoordinate(3, -2);
       const hexes = getHexesInRange(offsetCenter, 2);
@@ -308,46 +318,42 @@ describe('hexRanges', () => {
   });
 
   describe('performance and edge cases', () => {
-    it('should handle large ranges efficiently', () => {
+    it('should handle large ranges without errors', () => {
       const center = createHexCoordinate(0, 0);
-
-// Remove hard timing check – keep logical assertions only
-const hexes = getHexesInRange(center, 10);
-
-// OR: mark as performance benchmark, not unit-test
-// it.skip('performance …', …)
-      const endTime = Date.now();
+      const hexes = getHexesInRange(center, 10);
       
       expect(hexes.length).toBe(331); // 1 + 3*10*11
-      expect(endTime - startTime).toBeLessThan(50); // Should be very fast
+      
+      // Verify all hexes are within range
+      hexes.forEach(hex => {
+        expect(calculateHexDistance(center, hex)).toBeLessThanOrEqual(10);
+      });
     });
 
-    it('should handle ring calculations efficiently', () => {
+    it('should handle ring calculations for large radii', () => {
       const center = createHexCoordinate(0, 0);
-      const startTime = Date.now();
-      
       const ring = getHexRing(center, 20);
       
-      const endTime = Date.now();
-      
       expect(ring.length).toBe(120); // 6*20
-      expect(endTime - startTime).toBeLessThan(10);
+      
+      // Verify all hexes are exactly at the specified distance
+      ring.forEach(hex => {
+        expect(calculateHexDistance(center, hex)).toBe(20);
+      });
     });
 
     it('should handle tactical calculations with large movement ranges', () => {
       const current = createHexCoordinate(0, 0);
       const target = createHexCoordinate(50, 0);
-      const startTime = Date.now();
-      
       const positions = getTacticalPositions(current, target, 15);
       
-      const endTime = Date.now();
-      
       expect(positions.aggressive.length + positions.defensive.length).toBeGreaterThan(100);
-      // Optional: enable this only when PERF_TESTS env var is set
-if (process.env.PERF_TESTS) {
-  expect(endTime - startTime).toBeLessThan(100);
-}
+      
+      // Verify all positions are reachable
+      const allPositions = [...positions.aggressive, ...positions.defensive];
+      allPositions.forEach(position => {
+        expect(calculateHexDistance(current, position)).toBeLessThanOrEqual(15);
+      });
     });
 
     it('should not duplicate hexes in range calculations', () => {

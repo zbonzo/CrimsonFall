@@ -22,19 +22,29 @@ export function hasLineOfSight(
 ): boolean {
   const distance = calculateHexDistance(from, to);
   
-  // Adjacent hexes always have line of sight
   if (distance <= 1) {
     return true;
   }
   
-  const hexToString = (hex: HexCoordinate) => `${hex.q},${hex.r},${hex.s}`;
+  const hexToString = (hex: HexCoordinate) => `${hex.q},${hex.s},${hex.r}`;
   
-  // Get all hexes in a straight line between from and to
   const lineHexes = getHexLine(from, to);
+
+  // --- START DEBUGGING ---
+  // Convert the generated line to strings for easy comparison
+  const lineAsStrings = lineHexes.map(hexToString);
+
+  console.log('--- Line of Sight Check ---');
+  console.log(`From: ${hexToString(from)} | To: ${hexToString(to)}`);
+  console.log('Generated Line:', lineAsStrings);
+  console.log('Obstacles:', obstacles);
+  // --- END DEBUGGING ---
   
-  // Check if any hex in the line (except start and end) is blocked
   for (let i = 1; i < lineHexes.length - 1; i++) {
-    if (obstacles.has(hexToString(lineHexes[i]!))) {
+    const currentHexAsString = hexToString(lineHexes[i]!);
+    // console.log(`Checking hex: ${currentHexAsString}...`); // Optional: more detailed logging
+    if (obstacles.has(currentHexAsString)) {
+      // console.log('Collision FOUND!'); // Optional
       return false;
     }
   }
