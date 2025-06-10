@@ -27,7 +27,7 @@ export function hasLineOfSight(
     return true;
   }
   
-  const hexToString = (hex: HexCoordinate) => `${hex.q},${hex.r}`;
+  const hexToString = (hex: HexCoordinate) => `${hex.q},${hex.r},${hex.s}`;
   
   // Get all hexes in a straight line between from and to
   const lineHexes = getHexLine(from, to);

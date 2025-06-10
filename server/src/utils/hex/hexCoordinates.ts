@@ -53,7 +53,7 @@ export function createHexCoordinate(q: number, r: number): HexCoordinate {
  * Validates that a hex coordinate follows the cube coordinate constraint
  */
 export function isValidHexCoordinate(hex: HexCoordinate): boolean {
-  return Math.abs(hex.q + hex.r + hex.s) < Number.EPSILON;
+  return Math.abs(hex.q + hex.r + hex.s) <= Number.EPSILON;
 }
 
 /**

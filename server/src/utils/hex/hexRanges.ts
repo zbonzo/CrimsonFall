@@ -19,9 +19,9 @@ import {
  * Gets all hex coordinates within specified range of origin
  */
 export function getHexesInRange(origin: HexCoordinate, range: MovementRange): HexCoordinate[] {
-  if (range < 0) {
-    throw new Error('Range must be non-negative');
-  }
+  if (!Number.isInteger(range) || range < 0) {
+     throw new Error('Range must be a non-negative integer');
+   }
   
   const hexesInRange: HexCoordinate[] = [];
   
