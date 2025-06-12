@@ -41,6 +41,8 @@ export class PlayerAbilitiesManager {
       cooldown: 0,
       description: 'Skip your turn',
     });
+
+    this._classAbilities.forEach(ability => this._unlockedAbilities.add(ability.id));
   }
 
   // === GETTERS ===
@@ -204,14 +206,72 @@ export class PlayerAbilitiesManager {
   }
 
   public resetForEncounter(): void {
+    // TODO: GAME DESIGN DECISION - Cooldown Reset Between Encounters
+    //
+    // DECISION NEEDED: How should cooldowns behave between encounters?
+    //
+    // OPTIONS:
+    // A) Full Reset: All cooldowns cleared (simpler, more forgiving)
+    // B) Full Persist: All cooldowns carry over (strategic depth, resource management)
+    // C) Hybrid: Reset basic (0-2), reduce tactical (3-4), persist signature (5+)
+    // D) Set as a Game Setting
+    //
+    // FACTORS TO CONSIDER:
+    // - Ability variety and cooldown distribution in final game
+    // - Player feedback on encounter difficulty progression
+    // - Balance between accessibility and strategic depth
+    // - Session length and encounter count per dungeon
+    //
+    // IMPLEMENTATION IMPACT:
+    // - Encounter balancing assumptions
+    // - Ability design patterns (short vs long cooldowns)
+    // - Player learning curve and frustration points
+    //
+    // DECISION TIMELINE: After ability system is more complete and tested
+    //
+    // CURRENT: Full reset for development simplicity
     this.clearAllCooldowns();
+
+    // Clear temporary abilities
     this._temporaryAbilities.clear();
     this._usageCount.clear();
 
-    // Re-add basic abilities
-    this._unlockedAbilities.clear();
-    this._unlockedAbilities.add('basic_attack');
-    this._unlockedAbilities.add('wait');
+    // Add basic abilities
+    this.addAbility({
+      id: 'basic_attack',
+      name: 'Basic Attack',
+      type: 'attack',
+      damage: 10,
+      range: 1,
+      cooldown: 0,
+      description: 'A simple melee attack',
+    });
+
+    this.addAbility({
+      id: 'wait',
+      name: 'Wait',
+      type: 'utility',
+      range: 0,
+      cooldown: 0,
+      description: 'Skip your turn',
+    });
+
+    this._classAbilities
+      .filter(ability => this._unlockedAbilities.has(ability.id))
+      .forEach(ability => {
+        this._unlockedAbilities.add(ability.id);
+      });
+  }
+
+  // TODO: Add method for alternative reset strategies when decision is made
+  private resetCooldownsFullPersist(): void {
+    // Alternative: Don't reset any cooldowns
+    // Only clear temporary state
+  }
+
+  private resetCooldownsHybrid(): void {
+    // Alternative: Category-based reset rules
+    // Requires ability categorization system
   }
 
   // === UTILITY ===

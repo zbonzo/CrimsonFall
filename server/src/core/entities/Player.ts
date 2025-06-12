@@ -1,6 +1,6 @@
 /**
- * @fileoverview Minimal Player entity focusing on coordination only
- * Combines subsystem managers with clean delegation
+ * @fileoverview Fixed Player entity with proper status effects integration
+ * Now correctly applies status effect modifiers to damage, healing, and armor
  *
  * @file server/src/core/entities/Player.ts
  */
@@ -38,7 +38,7 @@ const DEFAULT_POSITION: HexCoordinate = { q: 0, r: 0, s: 0 } as const;
 // === MAIN PLAYER ENTITY ===
 
 /**
- * Main Player entity with minimal coordination logic
+ * Main Player entity with proper status effects integration
  */
 export class Player {
   public readonly id: string;
@@ -105,6 +105,7 @@ export class Player {
   public get effectiveArmor(): number {
     let armor = this._stats.effectiveArmor;
 
+    // Apply shield status effect
     if (this._statusEffects.hasEffect('shielded')) {
       const shieldEffect = this._statusEffects.getEffect('shielded');
       if (shieldEffect?.value) {
@@ -115,15 +116,17 @@ export class Player {
     return armor;
   }
 
-  // === DIRECT DELEGATION METHODS ===
+  // === DAMAGE AND HEALING WITH STATUS EFFECTS ===
 
   public takeDamage(amount: number, source: string = 'unknown'): DamageResult {
     if (!this.isAlive) {
       return { damageDealt: 0, blocked: 0, died: false };
     }
 
+    // Apply status effect modifiers to incoming damage
     const damageModifier = this._statusEffects.getDamageTakenModifier();
     const modifiedDamage = Math.floor(amount * damageModifier);
+
     return this._stats.takeDamage(modifiedDamage, source);
   }
 
@@ -132,10 +135,24 @@ export class Player {
       return { amountHealed: 0, newHp: this.currentHp };
     }
 
+    // Apply status effect modifiers to healing
     const healingModifier = this._statusEffects.getHealingModifier();
     const modifiedHealing = Math.floor(amount * healingModifier);
+
     return this._stats.heal(modifiedHealing);
   }
+
+  public calculateDamageOutput(baseDamage?: number): number {
+    // Get base damage from stats
+    const damage = this._stats.calculateDamageOutput(baseDamage);
+
+    // Apply status effect modifiers to damage output
+    const statusModifier = this._statusEffects.getDamageModifier();
+
+    return Math.floor(damage * statusModifier);
+  }
+
+  // === DELEGATION METHODS (UNCHANGED) ===
 
   public addExperience(amount: number): {
     leveledUp: boolean;
@@ -143,12 +160,6 @@ export class Player {
     benefitsGained?: string[];
   } {
     return this._stats.addExperience(amount);
-  }
-
-  public calculateDamageOutput(baseDamage?: number): number {
-    const damage = this._stats.calculateDamageOutput(baseDamage);
-    const statusModifier = this._statusEffects.getDamageModifier();
-    return Math.floor(damage * statusModifier);
   }
 
   public moveTo(
@@ -262,9 +273,11 @@ export class Player {
       switch (effect.type) {
         case 'poison_damage':
         case 'burning_damage':
+          // Use raw damage here to avoid double-applying status modifiers
           this._stats.takeDamage(effect.value, effect.type);
           break;
         case 'regeneration_heal':
+          // Use raw healing here to avoid double-applying status modifiers
           this._stats.heal(effect.value);
           break;
       }
@@ -280,7 +293,7 @@ export class Player {
     if (startingPosition) {
       this._movement.setStartingPosition(startingPosition);
     }
-
+    console.log('reset for Encounter');
     this._actions.resetForEncounter();
     this._abilities.resetForEncounter();
     this._statusEffects.resetForEncounter();
