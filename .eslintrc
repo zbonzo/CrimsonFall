@@ -49,6 +49,22 @@
         }
       },
       {
+        "selector": "public",
+        "format": ["camelCase"],
+        "custom": {
+          "regex": "^(get|set|is|has|can|add|remove|create|destroy|delete|find|search|calculate|compute|handle|process|on|ensure|validate|load|save|fetch|upload|init|reset|clear|update)[A-Z]",
+          "match": true
+        }
+      },
+      {
+        "selector": "private",
+        "format": ["camelCase"],
+        "custom": {
+          "regex": "^(get|set|is|has|can|add|remove|create|destroy|delete|find|search|calculate|compute|handle|process|on|ensure|validate|load|save|fetch|upload|init|reset|clear|update)[A-Z]",
+          "match": true
+        }
+      },
+      {
         "selector": "typeLike",
         "format": ["PascalCase"]
       },
@@ -98,11 +114,15 @@
     "import/no-duplicates": "error",
     "import/no-default-export": "error",
     "unused-imports/no-unused-imports": "error",
-    "sort-keys": ["error", "asc", { 
-      "caseSensitive": true, 
-      "natural": true,
-      "allowLineSeparatedGroups": true 
-    }],
+    "sort-keys": [
+      "error",
+      "asc",
+      {
+        "caseSensitive": true,
+        "natural": true,
+        "allowLineSeparatedGroups": true
+      }
+    ],
     "@typescript-eslint/explicit-function-return-type": "error",
     "@typescript-eslint/no-explicit-any": "error",
     "@typescript-eslint/no-unused-vars": "error",
