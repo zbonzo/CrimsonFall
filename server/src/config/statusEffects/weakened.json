@@ -1,0 +1,20 @@
+{
+  "name": "Weakened",
+  "description": "Reduces the target's damage dealt.",
+  "icon": "weakened_icon.png",
+  "effects": [
+    {
+      "type": "damage_dealt_decrease",
+      "value": 0.2
+    }
+  ],
+  "duration": 3,
+  "stackable": false,
+  "maxStacks": 1,
+  "applyEffect": {
+    "type": "none"
+  },
+  "removeEffect": {
+    "type": "none"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "Regeneration",
+  "description": "Restores health over time.",
+  "icon": "regeneration_icon.png",
+  "duration": 5,
+  "tickInterval": 1,
+  "healthPerTick": 5,
+  "stackable": true,
+  "maxStacks": 3,
+  "applyEffect": {
+    "type": "heal",
+    "amount": 5
+  },
+  "removeEffect": {
+    "type": "none"
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "id": "goblin_archer",
+  "name": "Goblin Archer",
+  "type": "monster",
+  "description": "A cunning goblin archer that prefers to attack from range.",
+  "stats": {
+    "maxHp": 35,
+    "baseArmor": 0,
+    "baseDamage": 10,
+    "movementRange": 4
+  },
+  "abilities": [
+    {
+      "id": "shortbow_shot",
+      "name": "Shortbow Shot",
+      "type": "attack",
+      "damage": 14,
+      "range": 4,
+      "cooldown": 0,
+      "description": "A ranged attack with a crude shortbow",
+      "targetType": "enemy"
+    },
+    {
+      "id": "poison_arrow",
+      "name": "Poison Arrow",
+      "type": "attack",
+      "damage": 8,
+      "range": 4,
+      "cooldown": 3,
+      "description": "An arrow coated in weak poison",
+      "targetType": "enemy",
+      "statusEffects": [
+        {
+          "effectName": "poison",
+          "duration": 3,
+          "value": 3,
+          "chance": 0.8
+        }
+      ]
+    },
+    {
+      "id": "retreat",
+      "name": "Tactical Retreat",
+      "type": "utility",
+      "range": 0,
+      "cooldown": 4,
+      "description": "Increases movement for 1 round",
+      "targetType": "self",
+      "statusEffects": [
+        {
+          "effectName": "swift",
+          "duration": 1,
+          "value": 2,
+          "chance": 1.0
+        }
+      ]
+    }
+  ],
+  "aiType": "tactical",
+  "threatConfig": {
+    "enabled": true,
+    "decayRate": 0.15,
+    "healingMultiplier": 2.0,
+    "damageMultiplier": 1.2,
+    "armorMultiplier": 0.3,
+    "avoidLastTargetRounds": 2,
+    "fallbackToLowestHp": false,
+    "enableTiebreaker": true
+  },
+  "spawnWeight": 8,
+  "difficulty": 1,
+  "behaviors": [
+    {
+      "name": "use_poison_arrow_on_high_threat",
+      "condition": {
+        "type": "enemy_in_range",
+        "value": 4
+      },
+      "action": {
+        "type": "use_ability",
+        "abilityId": "poison_arrow",
+        "targetType": "strongest_enemy"
+      },
+      "priority": 7
+    },
+    {
+      "name": "retreat_when_wounded",
+      "condition": {
+        "type": "hp_below",
+        "value": 0.4
+      },
+      "action": {
+        "type": "use_ability",
+        "abilityId": "retreat",
+        "targetType": "self"
+      },
+      "priority": 9
+    },
+    {
+      "name": "maintain_distance",
+      "condition": {
+        "type": "enemy_in_range",
+        "value": 2
+      },
+      "action": {
+        "type": "flee",
+        "targetType": "nearest_enemy"
+      },
+      "priority": 5
+    }
+  ],
+  "tags": ["humanoid", "ranged", "tactical"]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "Burning",
+  "description": "Deals damage over time to the target.",
+  "icon": "burning_icon.png",
+  "duration": 5,
+  "effects": [
+    {
+      "type": "damage_over_time",
+      "value": 10,
+      "tickRate": 1
+    }
+  ],
+  "stackable": true,
+  "unique": false,
+  "maxStacks": 3,
+  "applyEffect": {
+    "type": "none"
+  },
+  "removeEffect": {
+    "type": "none"
+  }
+}

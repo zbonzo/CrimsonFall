@@ -1,0 +1,21 @@
+{
+  "name": "Invisible",
+  "description": "Makes the target invisible, preventing it from being targeted by enemies.",
+  "icon": "invisible_icon.png",
+  "duration": 5,
+  "effects": [
+    {
+      "type": "invisibility",
+      "value": 1
+    }
+  ],
+  "stackable": false,
+  "maxStacks": 1,
+  "cooldown": 0,
+  "applyEffect": {
+    "type": "none"
+  },
+  "removeEffect": {
+    "type": "none"
+  }
+}

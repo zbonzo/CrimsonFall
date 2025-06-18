@@ -20,16 +20,16 @@ import type {
 } from '@/core/types/playerTypes';
 
 import { PlayerStatsManager } from '../player/PlayerStatsManager';
-import { PlayerMovementManager } from '@/core/player/PlayerMovementManager';
+import { PlayerMovementManager } from '@/core/player/EntityMovementManager';
 import {
   PlayerActionManager,
   type ActionGameStateValidator,
-} from '@/core/player/PlayerActionManager';
-import { PlayerAbilitiesManager } from '@/core/player/PlayerAbilitiesManager';
+} from '@/core/player/EntityActionManager';
+import { PlayerAbilitiesManager } from '@/core/player/EntityAbilitiesManager';
 import {
   PlayerStatusEffectsManager,
   type StatusEffectName,
-} from '@/core/player/PlayerStatusEffectsManager';
+} from '@/core/player/EntityStatusEffectsManager';
 
 // === CONSTANTS ===
 

@@ -1,0 +1,25 @@
+{
+  "name": "Frozen",
+  "description": "Prevents the target from moving or taking actions for a duration.",
+  "icon": "frozen_icon.png",
+  "duration": 3,
+  "effects": [
+    {
+      "type": "disable_actions",
+      "value": 1
+    },
+    {
+      "type": "disable_movement",
+      "value": 1
+    }
+  ],
+  "stackable": false,
+  "maxStacks": 1,
+  "cooldown": 0,
+  "applyEffect": {
+    "type": "none"
+  },
+  "removeEffect": {
+    "type": "none"
+  }
+}

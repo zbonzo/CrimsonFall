@@ -1,0 +1,83 @@
+{
+  "id": "skeleton_warrior",
+  "name": "Skeleton Warrior",
+  "type": "monster",
+  "description": "An animated skeleton wielding ancient weapons. Resistant to certain effects.",
+  "stats": {
+    "maxHp": 40,
+    "baseArmor": 2,
+    "baseDamage": 14,
+    "movementRange": 3
+  },
+  "abilities": [
+    {
+      "id": "bone_sword_strike",
+      "name": "Bone Sword Strike",
+      "type": "attack",
+      "damage": 14,
+      "range": 1,
+      "cooldown": 0,
+      "description": "A strike with an ancient bone sword",
+      "targetType": "enemy"
+    },
+    {
+      "id": "bone_armor",
+      "name": "Reinforce Bones",
+      "type": "defense",
+      "range": 0,
+      "cooldown": 3,
+      "description": "Hardens bones, increasing armor temporarily",
+      "targetType": "self",
+      "statusEffects": [
+        {
+          "effectName": "shielded",
+          "duration": 3,
+          "value": 3,
+          "chance": 1.0
+        }
+      ]
+    }
+  ],
+  "aiType": "defensive",
+  "threatConfig": {
+    "enabled": true,
+    "decayRate": 0.08,
+    "healingMultiplier": 0.5,
+    "damageMultiplier": 1.2,
+    "armorMultiplier": 0.8,
+    "avoidLastTargetRounds": 1,
+    "fallbackToLowestHp": true,
+    "enableTiebreaker": true
+  },
+  "spawnWeight": 6,
+  "difficulty": 1,
+  "behaviors": [
+    {
+      "name": "reinforce_when_threatened",
+      "condition": {
+        "type": "hp_below",
+        "value": 0.6
+      },
+      "action": {
+        "type": "use_ability",
+        "abilityId": "bone_armor",
+        "targetType": "self"
+      },
+      "priority": 8
+    },
+    {
+      "name": "attack_nearest",
+      "condition": {
+        "type": "enemy_in_range",
+        "value": 1
+      },
+      "action": {
+        "type": "use_ability",
+        "abilityId": "bone_sword_strike",
+        "targetType": "nearest_enemy"
+      },
+      "priority": 5
+    }
+  ],
+  "tags": ["undead", "resistant_poison", "defensive"]
+}

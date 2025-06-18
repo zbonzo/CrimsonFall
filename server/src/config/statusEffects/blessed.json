@@ -1,0 +1,20 @@
+{
+  "name": "Blessed",
+  "description": "Increases healing received by the target.",
+  "icon": "blessed_icon.png",
+  "duration": 3,
+  "effects": [
+    {
+      "type": "healing_received_increase",
+      "value": 0.2
+    }
+  ],
+  "stackable": false,
+  "maxStacks": 1,
+  "applyEffect": {
+    "type": "none"
+  },
+  "removeEffect": {
+    "type": "none"
+  }
+}

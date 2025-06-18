@@ -1,0 +1,20 @@
+{
+  "name": "Shielded",
+  "description": "Increases armor, reducing incoming damage.",
+  "icon": "shielded_icon.png",
+  "duration": 3,
+  "effects": [
+    {
+      "type": "armor_increase",
+      "value": 3
+    }
+  ],
+  "stackable": true,
+  "maxStacks": 10,
+  "applyEffect": {
+    "type": "none"
+  },
+  "removeEffect": {
+    "type": "none"
+  }
+}

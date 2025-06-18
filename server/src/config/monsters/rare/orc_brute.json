@@ -1,0 +1,120 @@
+{
+  "id": "orc_brute",
+  "name": "Orc Brute",
+  "type": "monster",
+  "description": "A massive orc warrior with tremendous strength but limited intelligence.",
+  "stats": {
+    "maxHp": 80,
+    "baseArmor": 3,
+    "baseDamage": 18,
+    "movementRange": 2
+  },
+  "abilities": [
+    {
+      "id": "crushing_blow",
+      "name": "Crushing Blow",
+      "type": "attack",
+      "damage": 22,
+      "range": 1,
+      "cooldown": 0,
+      "description": "A devastating melee attack",
+      "targetType": "enemy"
+    },
+    {
+      "id": "berserker_rage",
+      "name": "Berserker Rage",
+      "type": "utility",
+      "range": 0,
+      "cooldown": 4,
+      "description": "Becomes enraged, gaining damage but losing armor",
+      "targetType": "self",
+      "statusEffects": [
+        {
+          "effectName": "enraged",
+          "duration": 3,
+          "value": 50,
+          "chance": 1.0
+        },
+        {
+          "effectName": "vulnerable",
+          "duration": 3,
+          "value": 25,
+          "chance": 1.0
+        }
+      ]
+    },
+    {
+      "id": "intimidate",
+      "name": "Intimidating Roar",
+      "type": "utility",
+      "range": 2,
+      "cooldown": 5,
+      "description": "Attempts to frighten nearby enemies",
+      "targetType": "enemy",
+      "areaOfEffect": 2,
+      "statusEffects": [
+        {
+          "effectName": "feared",
+          "duration": 2,
+          "value": 1,
+          "chance": 0.6
+        }
+      ]
+    }
+  ],
+  "aiType": "berserker",
+  "threatConfig": {
+    "enabled": true,
+    "decayRate": 0.05,
+    "healingMultiplier": 1.0,
+    "damageMultiplier": 1.5,
+    "armorMultiplier": 1.0,
+    "avoidLastTargetRounds": 0,
+    "fallbackToLowestHp": true,
+    "enableTiebreaker": false
+  },
+  "spawnWeight": 4,
+  "difficulty": 2,
+  "behaviors": [
+    {
+      "name": "rage_when_wounded",
+      "condition": {
+        "type": "hp_below",
+        "value": 0.5
+      },
+      "action": {
+        "type": "use_ability",
+        "abilityId": "berserker_rage",
+        "targetType": "self"
+      },
+      "priority": 10
+    },
+    {
+      "name": "intimidate_multiple_enemies",
+      "condition": {
+        "type": "enemy_in_range",
+        "value": 2
+      },
+      "action": {
+        "type": "use_ability",
+        "abilityId": "intimidate",
+        "targetType": "nearest_enemy"
+      },
+      "priority": 7
+    },
+    {
+      "name": "crush_strongest",
+      "condition": {
+        "type": "enemy_in_range",
+        "value": 1
+      },
+      "action": {
+        "type": "use_ability",
+        "abilityId": "crushing_blow",
+        "targetType": "strongest_enemy"
+      },
+      "priority": 6
+    }
+  ],
+  "tags": ["humanoid", "brute", "intimidating"]
+}

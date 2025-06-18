@@ -1,0 +1,21 @@
+{
+  "id": "poison",
+  "name": "Poison",
+  "description": "Deals damage over time and reduces healing received.",
+  "icon": "poison_icon.png",
+  "duration": 3,
+  "effects": [
+    {
+      "type": "damage_over_time",
+      "value": 5,
+      "tickRate": 1
+    },
+    {
+      "type": "healing_reduction",
+      "value": 0.5
+    }
+  ],
+  "stackable": true,
+  "maxStacks": 5,
+  "category": "debuff"
+}

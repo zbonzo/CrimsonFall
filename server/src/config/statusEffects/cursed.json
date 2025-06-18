@@ -1,0 +1,25 @@
+{
+  "name": "Cursed",
+  "description": "Reduces the target's damage dealt and increases damage taken.",
+  "icon": "cursed_icon.png",
+  "duration": 5,
+  "effects": [
+    {
+      "type": "damage_dealt_decrease",
+      "value": 0.2
+    },
+    {
+      "type": "damage_taken_increase",
+      "value": 0.2
+    }
+  ],
+  "stackable": false,
+  "maxStacks": 1,
+  "cooldown": 0,
+  "applyEffect": {
+    "type": "none"
+  },
+  "removeEffect": {
+    "type": "none"
+  }
+}

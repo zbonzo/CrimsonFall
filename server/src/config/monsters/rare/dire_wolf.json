@@ -1,0 +1,107 @@
+{
+  "id": "dire_wolf",
+  "name": "Dire Wolf",
+  "type": "monster",
+  "description": "A massive wolf with supernatural speed and pack hunting instincts.",
+  "stats": {
+    "maxHp": 55,
+    "baseArmor": 1,
+    "baseDamage": 16,
+    "movementRange": 5
+  },
+  "abilities": [
+    {
+      "id": "bite",
+      "name": "Savage Bite",
+      "type": "attack",
+      "damage": 16,
+      "range": 1,
+      "cooldown": 0,
+      "description": "A powerful bite attack",
+      "targetType": "enemy"
+    },
+    {
+      "id": "pounce",
+      "name": "Pounce",
+      "type": "attack",
+      "damage": 20,
+      "range": 3,
+      "cooldown": 3,
+      "description": "Leaps at an enemy, dealing extra damage",
+      "targetType": "enemy"
+    },
+    {
+      "id": "howl",
+      "name": "Pack Howl",
+      "type": "utility",
+      "range": 0,
+      "cooldown": 4,
+      "description": "Calls for pack support, buffing all allied wolves",
+      "targetType": "ally",
+      "areaOfEffect": 99,
+      "statusEffects": [
+        {
+          "effectName": "pack_bonus",
+          "duration": 3,
+          "value": 20,
+          "chance": 1.0
+        }
+      ]
+    }
+  ],
+  "aiType": "aggressive",
+  "threatConfig": {
+    "enabled": true,
+    "decayRate": 0.12,
+    "healingMultiplier": 1.8,
+    "damageMultiplier": 1.3,
+    "armorMultiplier": 0.4,
+    "avoidLastTargetRounds": 1,
+    "fallbackToLowestHp": false,
+    "enableTiebreaker": true
+  },
+  "spawnWeight": 5,
+  "difficulty": 2,
+  "behaviors": [
+    {
+      "name": "pounce_on_ranged",
+      "condition": {
+        "type": "enemy_in_range",
+        "value": 3
+      },
+      "action": {
+        "type": "use_ability",
+        "abilityId": "pounce",
+        "targetType": "weakest_enemy"
+      },
+      "priority": 8
+    },
+    {
+      "name": "howl_for_pack",
+      "condition": {
+        "type": "ally_in_danger",
+        "value": 0.3
+      },
+      "action": {
+        "type": "use_ability",
+        "abilityId": "howl",
+        "targetType": "self"
+      },
+      "priority": 9
+    },
+    {
+      "name": "bite_adjacent",
+      "condition": {
+        "type": "enemy_in_range",
+        "value": 1
+      },
+      "action": {
+        "type": "use_ability",
+        "abilityId": "bite",
+        "targetType": "nearest_enemy"
+      },
+      "priority": 6
+    }
+  ],
+  "tags": ["beast", "pack_hunter", "fast"]
+}

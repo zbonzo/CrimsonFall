@@ -1,0 +1,83 @@
+{
+  "id": "goblin_warrior",
+  "name": "Goblin Warrior",
+  "type": "monster",
+  "description": "A fierce goblin warrior wielding a rusty blade. Quick and aggressive.",
+  "stats": {
+    "maxHp": 45,
+    "baseArmor": 1,
+    "baseDamage": 12,
+    "movementRange": 3
+  },
+  "abilities": [
+    {
+      "id": "rusty_slash",
+      "name": "Rusty Slash",
+      "type": "attack",
+      "damage": 12,
+      "range": 1,
+      "cooldown": 0,
+      "description": "A basic attack with a corroded blade",
+      "targetType": "enemy"
+    },
+    {
+      "id": "battle_cry",
+      "name": "Battle Cry",
+      "type": "utility",
+      "range": 0,
+      "cooldown": 3,
+      "description": "Boosts own damage for 2 rounds",
+      "targetType": "self",
+      "statusEffects": [
+        {
+          "effectName": "enraged",
+          "duration": 2,
+          "value": 25,
+          "chance": 1.0
+        }
+      ]
+    }
+  ],
+  "aiType": "aggressive",
+  "threatConfig": {
+    "enabled": true,
+    "decayRate": 0.1,
+    "healingMultiplier": 1.5,
+    "damageMultiplier": 1.0,
+    "armorMultiplier": 0.5,
+    "avoidLastTargetRounds": 1,
+    "fallbackToLowestHp": true,
+    "enableTiebreaker": true
+  },
+  "spawnWeight": 10,
+  "difficulty": 1,
+  "behaviors": [
+    {
+      "name": "use_battle_cry_when_healthy",
+      "condition": {
+        "type": "hp_above",
+        "value": 0.7
+      },
+      "action": {
+        "type": "use_ability",
+        "abilityId": "battle_cry",
+        "targetType": "self"
+      },
+      "priority": 8
+    },
+    {
+      "name": "attack_weakest_enemy",
+      "condition": {
+        "type": "enemy_in_range",
+        "value": 1
+      },
+      "action": {
+        "type": "use_ability",
+        "abilityId": "rusty_slash",
+        "targetType": "weakest_enemy"
+      },
+      "priority": 6
+    }
+  ],
+  "tags": ["humanoid", "aggressive", "common"]
+}

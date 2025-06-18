@@ -1,0 +1,21 @@
+{
+  "name": "Enraged",
+  "description": "Increases damage dealt by the target.",
+  "icon": "enraged_icon.png",
+
+  "duration": 3,
+  "effects": [
+    {
+      "type": "damage_dealt_increase",
+      "value": 0.3
+    }
+  ],
+  "stackable": false,
+  "maxStacks": 1,
+  "applyEffect": {
+    "type": "none"
+  },
+  "removeEffect": {
+    "type": "none"
+  }
+}

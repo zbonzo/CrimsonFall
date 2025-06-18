@@ -1,0 +1,20 @@
+{
+  "name": "Stunned",
+  "description": "Prevents the target from taking actions for a duration.",
+  "icon": "stunned_icon.png",
+  "duration": 2,
+  "effects": [
+    {
+      "type": "disable_actions",
+      "value": 1
+    }
+  ],
+  "stackable": false,
+  "maxStacks": 1,
+  "applyEffect": {
+    "type": "none"
+  },
+  "removeEffect": {
+    "type": "none"
+  }
+}
