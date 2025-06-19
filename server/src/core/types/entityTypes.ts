@@ -262,6 +262,7 @@ export interface ShopItem {
 // === SHARED ENTITY INTERFACES ===
 
 export interface CombatEntity {
+  addStatusEffect(effectName: any, duration: any, value: any): unknown;
   readonly id: string;
   readonly name: string;
   readonly type: EntityType;
@@ -346,7 +347,7 @@ export interface PlayerPublicData extends EntityPublicData {
   readonly hasSubmittedAction: boolean;
 }
 
-export interface PlayerPrivateData extends PlayerPublicData {
+export interface PlayerPrivateData extends EntityPrivateData, PlayerPublicData {
   readonly submittedAction: PlayerAction | null;
   readonly actionSubmissionTime: number | null;
 }

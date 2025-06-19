@@ -7,7 +7,7 @@
  * @file tests/unit/server/core/player/PlayerAbilitiesManager.test.ts
  */
 
-import { PlayerAbilitiesManager } from '../../../../../server/src/core/player/PlayerAbilitiesManager.js';
+import { PlayerAbilitiesManager } from '../../../../../server/src/core/player/EntityAbilitiesManager.js';
 import type { AbilityDefinition } from '../../../../../server/src/core/types/playerTypes.js';
 
 // === TEST FIXTURES ===

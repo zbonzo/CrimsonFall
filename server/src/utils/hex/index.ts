@@ -1,9 +1,9 @@
 /**
  * Hex Dungeon Crawler - Hex Utilities Index
- * 
+ *
  * Consolidated exports for all hex math functionality
  * Provides clean import paths for consumers
- * 
+ *
  * @file server/src/utils/hex/index.ts
  */
 

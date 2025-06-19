@@ -14,20 +14,21 @@
     "removeComments": false,
     "importHelpers": true,
     "isolatedModules": true,
-    
+
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
+      "@/*": ["server/src/*"],
       "@/client/*": ["client/src/*"],
       "@/server/*": ["server/src/*"],
       "@/shared/*": ["shared/src/*"],
-      "@/tests/*": ["tests/*"]
+      "@/tests/*": ["tests/*"],
+      "@/utils/*": ["server/src/utils/*"]
     },
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
-    
+
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
@@ -38,32 +39,22 @@
     "noImplicitThis": true,
     "noImplicitOverride": true,
     "exactOptionalPropertyTypes": true,
-    
+
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
     "noPropertyAccessFromIndexSignature": true,
-    
+
     "noEmitOnError": true,
     "preserveConstEnums": true,
-    
+
     "experimentalDecorators": false,
     "emitDecoratorMetadata": false,
-    
+
     "skipLibCheck": true,
     "incremental": true
   },
-  "include": [
-    "server/src/**/*",
-    "client/src/**/*",
-    "shared/src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "tests",
-    "**/*.test.ts",
-    "**/*.test.tsx"
-  ]
+  "include": ["server/src/**/*", "client/src/**/*", "shared/src/**/*"],
+  "exclude": ["node_modules", "dist", "tests", "**/*.test.ts", "**/*.test.tsx"]
 }

@@ -11,15 +11,19 @@ import type {
   PlayerPublicData,
   PlayerPrivateData,
   PlayerAction,
+  CombatEntity,
+  MovableEntity,
+  AbilityUser,
+  StatusEffectTarget,
   ActionSubmissionResult,
   MovementResult,
   DamageResult,
   HealResult,
   AbilityDefinition,
   StatusEffectResult,
-} from '@/core/types/playerTypes';
+} from '@/core/types/entityTypes';
 
-import { PlayerStatsManager } from '../player/PlayerStatsManager';
+import { EntityStatsManager as PlayerStatsManager } from '../player/EntityStatsManager';
 import { PlayerMovementManager } from '@/core/player/EntityMovementManager';
 import {
   PlayerActionManager,
@@ -40,9 +44,10 @@ const DEFAULT_POSITION: HexCoordinate = { q: 0, r: 0, s: 0 } as const;
 /**
  * Main Player entity with proper status effects integration
  */
-export class Player {
+export class Player implements CombatEntity, MovableEntity, AbilityUser, StatusEffectTarget {
   public readonly id: string;
   public readonly name: string;
+  public readonly type: 'player' = 'player';
   public readonly playerClass: PlayerClass;
 
   private readonly _stats: PlayerStatsManager;
@@ -315,6 +320,9 @@ export class Player {
       isAlive: this.isAlive,
       hasSubmittedAction: this.hasSubmittedAction,
       statusEffects: this.activeStatusEffects,
+      hasMovedThisRound: this.hasMovedThisRound,
+      availableAbilities: this.getAvailableAbilities(),
+      type: 'player',
     };
   }
 

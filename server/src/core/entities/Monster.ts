@@ -1,6 +1,6 @@
 /**
- * @fileoverview Monster entity implementation using the unified entity system
- * Combines shared entity managers with monster-specific AI and threat systems
+ * @fileoverview Complete Monster entity implementation
+ * Fixed import paths, integrated shared managers, simplified AI integration
  *
  * @file server/src/core/entities/Monster.ts
  */
@@ -23,14 +23,14 @@ import type {
   AbilityDefinition,
   StatusEffect,
   ThreatUpdate,
-} from '@/core/types/entityTypes.js';
+} from '@/core/types/entityTypes';
 
-import { EntityStatsManager } from './EntityStatsManager.js';
+import { EntityStatsManager } from './EntityStatsManager';
 import { PlayerMovementManager as EntityMovementManager } from '@/core/player/EntityMovementManager';
 import { PlayerAbilitiesManager as EntityAbilitiesManager } from '@/core/player/EntityAbilitiesManager';
 import { PlayerStatusEffectsManager as EntityStatusEffectsManager } from '@/core/player/EntityStatusEffectsManager';
-import { MonsterAI } from '@/core/ai/MonsterAI.js';
-import { ThreatManager, ThreatCalculator } from '@/core/systems/ThreatManager.js';
+import { MonsterAI } from '@/core/ai/MonsterAI';
+import { ThreatManager, ThreatCalculator } from '@/core/systems/ThreatManager';
 
 // === CONSTANTS ===
 
@@ -81,7 +81,7 @@ export class Monster implements CombatEntity, MovableEntity, AbilityUser, Status
     this._statusEffects = new EntityStatusEffectsManager();
 
     // Initialize monster-specific systems
-    this._ai = new MonsterAI(definition.aiType, definition.behaviors);
+    this._ai = new MonsterAI(definition.aiType, definition.behaviors || []);
     this._threat = new ThreatManager(definition.threatConfig);
   }
 
@@ -333,11 +333,16 @@ export class Monster implements CombatEntity, MovableEntity, AbilityUser, Status
   // === MONSTER-SPECIFIC ABILITIES ===
 
   public calculateNextAttackDamage(): number {
-    // Calculate damage for the monster's basic attack
-    const basicAttack = this.getAbility('basic_attack') || this._definition.abilities[0];
+    // Try to find basic attack ability first
+    const basicAttack =
+      this.getAbility('basic_attack') ||
+      this.getAvailableAbilities().find(ability => ability.type === 'attack');
+
     if (basicAttack?.damage) {
       return this.calculateDamageOutput(basicAttack.damage);
     }
+
+    // Fallback to base damage
     return this.calculateDamageOutput();
   }
 
@@ -487,7 +492,7 @@ export class MonsterFactory {
       threatConfig: configData.threatConfig,
       spawnWeight: configData.spawnWeight,
       difficulty: configData.difficulty,
-      behaviors: configData.behaviors,
+      behaviors: configData.behaviors || [],
       lootTable: configData.lootTable,
       tags: configData.tags,
     };
@@ -509,5 +514,53 @@ export class MonsterFactory {
     }
 
     return monsters;
+  }
+
+  // === SIMPLE MONSTER FACTORY FOR TESTING ===
+
+  /**
+   * Creates a basic monster for testing the game loop
+   * Simplified AI that just attacks nearest player
+   */
+  public static createSimpleMonster(id: string, name: string, position?: HexCoordinate): Monster {
+    const definition: MonsterDefinition = {
+      id: 'simple_monster',
+      name,
+      type: 'monster',
+      description: 'A simple monster for testing',
+      stats: {
+        maxHp: 50,
+        baseArmor: 1,
+        baseDamage: 12,
+        movementRange: 3,
+      },
+      abilities: [
+        {
+          id: 'basic_attack',
+          name: 'Basic Attack',
+          type: 'attack',
+          damage: 12,
+          range: 1,
+          cooldown: 0,
+          description: 'A simple melee attack',
+        },
+      ],
+      aiType: 'aggressive',
+      threatConfig: {
+        enabled: false, // Disable for simplicity
+        decayRate: 0.1,
+        healingMultiplier: 1.0,
+        damageMultiplier: 1.0,
+        armorMultiplier: 0.5,
+        avoidLastTargetRounds: 0,
+        fallbackToLowestHp: true,
+        enableTiebreaker: true,
+      },
+      spawnWeight: 10,
+      difficulty: 1,
+      behaviors: [], // No complex behaviors for simple monster
+    };
+
+    return new Monster(id, definition, position);
   }
 }

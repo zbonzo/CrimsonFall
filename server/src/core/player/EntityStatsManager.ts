@@ -31,7 +31,7 @@ const DAMAGE_MODIFIER_PER_LEVEL = 0.1;
 /**
  * Manages player combat stats with clean naming
  */
-export class PlayerStatsManager {
+export class EntityStatsManager {
   private readonly _baseStats: PlayerStats;
   private _currentHp: number;
   private _temporaryArmor: number = 0;
