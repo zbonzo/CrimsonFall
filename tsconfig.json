@@ -14,15 +14,15 @@
     "removeComments": false,
     "importHelpers": true,
     "isolatedModules": true,
-
     "baseUrl": ".",
     "paths": {
       "@/*": ["server/src/*"],
+      "@/core/*": ["server/src/core/*"],
+      "@/utils/*": ["server/src/utils/*"],
       "@/client/*": ["client/src/*"],
       "@/server/*": ["server/src/*"],
       "@/shared/*": ["shared/src/*"],
-      "@/tests/*": ["tests/*"],
-      "@/utils/*": ["server/src/utils/*"]
+      "@/tests/*": ["tests/*"]
     },
     "resolveJsonModule": true,
     "esModuleInterop": true,
@@ -55,6 +55,11 @@
     "skipLibCheck": true,
     "incremental": true
   },
-  "include": ["server/src/**/*", "client/src/**/*", "shared/src/**/*"],
-  "exclude": ["node_modules", "dist", "tests", "**/*.test.ts", "**/*.test.tsx"]
+  "include": [
+    "server/src/**/*",
+    "client/src/**/*",
+    "shared/src/**/*",
+    "tests/**/*"
+  ],
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.test.tsx"]
 }

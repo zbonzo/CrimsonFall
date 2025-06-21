@@ -1,0 +1,37 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "lib": ["ES2022"],
+    "types": ["jest", "node"],
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noImplicitAny": false,
+    "sourceMap": false,
+    "outDir": "./dist/tests",
+    "rootDir": "..",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["../server/src/*"],
+      "@/core/*": ["../server/src/core/*"],
+      "@/systems/*": ["../server/src/core/systems/*"],
+      "@/entities/*": ["../server/src/core/entities/*"],
+      "@/utils/*": ["../server/src/utils/*"],
+      "@/client/*": ["../client/src/*"],
+      "@/server/*": ["../server/src/*"],
+      "@/shared/*": ["../shared/src/*"],
+      "@/tests/*": ["tests/*"]
+    },
+    "moduleResolution": "node"
+  },
+  "include": [
+    "e2e/**/*",
+    "unit/server/**/*",
+    "integration/**/*",
+    "fixtures/**/*"
+  ],
+  "exclude": ["node_modules", "dist"]
+}
