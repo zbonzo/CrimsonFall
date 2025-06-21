@@ -14,10 +14,10 @@ import type {
   TargetingContext,
   AIDecision,
   AbilityDefinition,
-} from '@/core/types/entityTypes.js';
-import type { HexCoordinate } from '@/utils/hex/index.js';
-import { ThreatManager } from '@/core/systems/ThreatManager.js';
-import { calculateHexDistance } from '@/utils/hexMath.js';
+} from '@/core/types/entityTypes';
+import type { HexCoordinate } from '@/utils/hex/index';
+import { ThreatManager } from '@/core/systems/ThreatManager';
+import { calculateHexDistance } from '@/utils/hexMath';
 
 // === CONSTANTS ===
 

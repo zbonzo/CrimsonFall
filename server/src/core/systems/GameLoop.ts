@@ -19,7 +19,7 @@ import type { PlayerAction, PlayerActionType } from '@/core/types/playerTypes';
 
 import { Player } from '@/core/entities/Player';
 import { Monster, MonsterFactory } from '@/core/entities/Monster';
-import { calculateHexDistance } from '../../utils/hexMath';
+import { calculateHexDistance } from '@/utils/hexMath';
 
 // === GAME LOOP TYPES ===
 

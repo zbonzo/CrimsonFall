@@ -23,18 +23,14 @@ import type {
   StatusEffectResult,
 } from '@/core/types/entityTypes';
 
-import { EntityStatsManager as PlayerStatsManager } from '../player/EntityStatsManager';
+import { EntityStatsManager as PlayerStatsManager } from '@/core/entities/EntityStatsManager';
 import { PlayerMovementManager } from '@/core/player/EntityMovementManager';
-import {
-  PlayerActionManager,
-  type ActionGameStateValidator,
-} from '@/core/player/EntityActionManager';
+import { PlayerActionManager } from '@/core/player/EntityActionManager';
 import { PlayerAbilitiesManager } from '@/core/player/EntityAbilitiesManager';
 import {
   PlayerStatusEffectsManager,
   type StatusEffectName,
 } from '@/core/player/EntityStatusEffectsManager';
-
 // === CONSTANTS ===
 
 const DEFAULT_POSITION: HexCoordinate = { q: 0, r: 0, s: 0 } as const;

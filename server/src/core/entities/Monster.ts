@@ -25,7 +25,7 @@ import type {
   ThreatUpdate,
 } from '@/core/types/entityTypes';
 
-import { EntityStatsManager } from './EntityStatsManager';
+import { EntityStatsManager } from '@/core/entities/EntityStatsManager';
 import { PlayerMovementManager as EntityMovementManager } from '@/core/player/EntityMovementManager';
 import { PlayerAbilitiesManager as EntityAbilitiesManager } from '@/core/player/EntityAbilitiesManager';
 import { PlayerStatusEffectsManager as EntityStatusEffectsManager } from '@/core/player/EntityStatusEffectsManager';

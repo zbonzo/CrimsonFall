@@ -5,14 +5,15 @@
  * @file server/src/core/player/PlayerMovementManager.ts
  */
 
-import type { HexCoordinate, MovementRange } from '../../utils/hex/hexCoordinates.js';
+import type { HexCoordinate, MovementRange } from '@/utils/hex/hexCoordinates';
 import {
   calculateHexDistance,
   getHexesInRange,
   findHexPath,
   createHexCoordinate,
-} from '../../utils/hexMath.js';
-import type { MovementResult } from '../types/playerTypes.js';
+} from '@/utils/hexMath';
+
+import type { MovementResult } from '../types/playerTypes';
 
 // === CONSTANTS ===
 
