@@ -8,9 +8,9 @@
 import type { HexCoordinate, MovementRange } from '@/utils/hex/hexCoordinates';
 import {
   calculateHexDistance,
-  getHexesInRange,
-  findHexPath,
   createHexCoordinate,
+  findHexPath,
+  getHexesInRange,
 } from '@/utils/hexMath';
 
 import type { MovementResult } from '../types/playerTypes';
@@ -25,7 +25,7 @@ const DEFAULT_POSITION: HexCoordinate = { q: 0, r: 0, s: 0 } as const;
 /**
  * Manages player position and movement with clean naming
  */
-export class PlayerMovementManager {
+export class EntityMovementManager {
   private _currentPosition: HexCoordinate;
   private _startingPosition: HexCoordinate;
   private readonly _movementRange: MovementRange;

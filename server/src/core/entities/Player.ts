@@ -2,35 +2,38 @@
  * @fileoverview Fixed Player entity with proper status effects integration
  * Now correctly applies status effect modifiers to damage, healing, and armor
  *
+ * FIXED: Removed reserved keywords 'type' → 'variant', 'class' → 'specialization'
+ *
  * @file server/src/core/entities/Player.ts
  */
 
-import type { HexCoordinate } from '@/utils/hex/index';
 import type {
-  PlayerClass,
-  PlayerPublicData,
-  PlayerPrivateData,
-  PlayerAction,
-  CombatEntity,
-  MovableEntity,
+  AbilityDefinition,
   AbilityUser,
-  StatusEffectTarget,
   ActionSubmissionResult,
-  MovementResult,
+  CombatEntity,
   DamageResult,
   HealResult,
-  AbilityDefinition,
+  MovableEntity,
+  MovementResult,
+  PlayerAction,
+  PlayerPrivateData,
+  PlayerPublicData,
+  PlayerSpecialization,
   StatusEffectResult,
-} from '@/core/types/entityTypes';
+  StatusEffectTarget,
+} from '@/core/types/entityTypes.ts';
+import type { HexCoordinate } from '@/utils/hex/index.ts';
 
-import { EntityStatsManager as PlayerStatsManager } from '@/core/entities/EntityStatsManager';
-import { PlayerMovementManager } from '@/core/player/EntityMovementManager';
-import { PlayerActionManager } from '@/core/player/EntityActionManager';
-import { PlayerAbilitiesManager } from '@/core/player/EntityAbilitiesManager';
+import { EntityAbilitiesManager } from '@/core/player/EntityAbilitiesManager';
+import { EntityActionManager } from '@/core/player/EntityActionManager';
+import { EntityMovementManager } from '@/core/player/EntityMovementManager';
+import { EntityStatsManager } from '@/core/player/EntityStatsManager';
 import {
-  PlayerStatusEffectsManager,
+  EntityStatusEffectsManager,
   type StatusEffectName,
 } from '@/core/player/EntityStatusEffectsManager';
+
 // === CONSTANTS ===
 
 const DEFAULT_POSITION: HexCoordinate = { q: 0, r: 0, s: 0 } as const;
@@ -43,34 +46,37 @@ const DEFAULT_POSITION: HexCoordinate = { q: 0, r: 0, s: 0 } as const;
 export class Player implements CombatEntity, MovableEntity, AbilityUser, StatusEffectTarget {
   public readonly id: string;
   public readonly name: string;
-  public readonly type: 'player' = 'player';
-  public readonly playerClass: PlayerClass;
+  public readonly variant: 'player' = 'player';
+  public readonly specialization: PlayerSpecialization;
 
-  private readonly _stats: PlayerStatsManager;
-  private readonly _movement: PlayerMovementManager;
-  private readonly _actions: PlayerActionManager;
-  private readonly _abilities: PlayerAbilitiesManager;
-  private readonly _statusEffects: PlayerStatusEffectsManager;
+  private readonly _stats: EntityStatsManager;
+  private readonly _movement: EntityMovementManager;
+  private readonly _actions: EntityActionManager;
+  private readonly _abilities: EntityAbilitiesManager;
+  private readonly _statusEffects: EntityStatusEffectsManager;
 
   constructor(
     id: string,
     name: string,
-    playerClass: PlayerClass,
+    specialization: PlayerSpecialization,
     startingPosition: HexCoordinate = DEFAULT_POSITION
   ) {
     if (!id?.trim()) throw new Error('Player ID cannot be empty');
     if (!name?.trim()) throw new Error('Player name cannot be empty');
-    if (!playerClass) throw new Error('Player class is required');
+    if (!specialization) throw new Error('Player specialization is required');
 
     this.id = id;
     this.name = name;
-    this.playerClass = playerClass;
+    this.specialization = specialization;
 
-    this._stats = new PlayerStatsManager(playerClass.stats);
-    this._movement = new PlayerMovementManager(startingPosition, playerClass.stats.movementRange);
-    this._actions = new PlayerActionManager();
-    this._abilities = new PlayerAbilitiesManager(playerClass.abilities);
-    this._statusEffects = new PlayerStatusEffectsManager();
+    this._stats = new EntityStatsManager(specialization.stats);
+    this._movement = new EntityMovementManager(
+      startingPosition,
+      specialization.stats.movementRange
+    );
+    this._actions = new EntityActionManager();
+    this._abilities = new EntityAbilitiesManager(specialization.abilities);
+    this._statusEffects = new EntityStatusEffectsManager();
   }
 
   // === CORE GETTERS ===
@@ -175,7 +181,7 @@ export class Player implements CombatEntity, MovableEntity, AbilityUser, StatusE
   }
 
   public submitAction(
-    actionType: PlayerAction['type'],
+    actionVariant: PlayerAction['variant'],
     params: {
       targetId?: string;
       targetPosition?: HexCoordinate;
@@ -188,7 +194,7 @@ export class Player implements CombatEntity, MovableEntity, AbilityUser, StatusE
     if (!this._statusEffects.canAct()) {
       return { success: false, reason: 'Cannot act due to status effects' };
     }
-    return this._actions.submitAction(actionType, params);
+    return this._actions.submitAction(actionVariant, params);
   }
 
   public getAbility(abilityId: string): AbilityDefinition | null {
@@ -209,9 +215,21 @@ export class Player implements CombatEntity, MovableEntity, AbilityUser, StatusE
     value?: number
   ): { success: boolean; reason?: string; stacks?: number } {
     const result = this._statusEffects.addEffect(effectName, duration, value);
-    return { success: result.success, reason: result.reason, stacks: result.stacks };
-  }
 
+    const returnValue: { success: boolean; reason?: string; stacks?: number } = {
+      success: result.success,
+    };
+
+    if (result.reason !== undefined) {
+      returnValue.reason = result.reason;
+    }
+
+    if (result.stacks !== undefined) {
+      returnValue.stacks = result.stacks;
+    }
+
+    return returnValue;
+  }
   public hasStatusEffect(effectName: string): boolean {
     return this._statusEffects.hasEffect(effectName);
   }
@@ -307,7 +325,7 @@ export class Player implements CombatEntity, MovableEntity, AbilityUser, StatusE
     return {
       id: this.id,
       name: this.name,
-      className: this.playerClass.name,
+      specializationName: this.specialization.name,
       level: this.level,
       currentHp: this.currentHp,
       maxHp: this.maxHp,
@@ -318,7 +336,7 @@ export class Player implements CombatEntity, MovableEntity, AbilityUser, StatusE
       statusEffects: this.activeStatusEffects,
       hasMovedThisRound: this.hasMovedThisRound,
       availableAbilities: this.getAvailableAbilities(),
-      type: 'player',
+      variant: 'player',
     };
   }
 
@@ -342,8 +360,10 @@ export class Player implements CombatEntity, MovableEntity, AbilityUser, StatusE
   public toString(): string {
     const status = this.isAlive ? `${this.currentHp}/${this.maxHp} HP` : 'DEAD';
     const pos = `(${this.position.q},${this.position.r})`;
-    const action = this.hasSubmittedAction ? `Action: ${this.submittedAction?.type}` : 'No action';
+    const action = this.hasSubmittedAction
+      ? `Action: ${this.submittedAction?.variant}`
+      : 'No action';
 
-    return `Player[${this.name}] L${this.level} ${this.playerClass.name} ${status} ${pos} ${action}`;
+    return `Player[${this.name}] L${this.level} ${this.specialization.name} ${status} ${pos} ${action}`;
   }
 }

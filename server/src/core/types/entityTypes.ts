@@ -2,6 +2,8 @@
  * @fileoverview Shared entity type definitions for the unified entity system
  * Types for Players, Monsters, NPCs, and shared behaviors
  *
+ * FIXED: Removed reserved keywords 'type' → 'variant', 'class' → 'specialization'
+ *
  * @file server/src/core/types/entityTypes.ts
  */
 
@@ -17,7 +19,7 @@ export interface EntityName {
   readonly value: string;
 }
 
-export type EntityType = 'player' | 'monster' | 'npc';
+export type EntityVariant = 'player' | 'monster' | 'npc';
 
 // === ENTITY STATS ===
 
@@ -36,12 +38,12 @@ export interface EntityLevel {
 
 // === ABILITIES (SHARED) ===
 
-export type AbilityType = 'attack' | 'defense' | 'utility' | 'healing';
+export type AbilityVariant = 'attack' | 'defense' | 'utility' | 'healing';
 
 export interface AbilityDefinition {
   readonly id: string;
   readonly name: string;
-  readonly type: AbilityType;
+  readonly variant: AbilityVariant;
   readonly damage?: number;
   readonly healing?: number;
   readonly range: number;
@@ -106,7 +108,7 @@ export interface MovementResult {
 export interface EntityDefinition {
   readonly id: string;
   readonly name: string;
-  readonly type: EntityType;
+  readonly variant: EntityVariant;
   readonly stats: EntityStats;
   readonly abilities: ReadonlyArray<AbilityDefinition>;
   readonly description?: string;
@@ -115,10 +117,10 @@ export interface EntityDefinition {
 
 // === PLAYER-SPECIFIC TYPES ===
 
-export type PlayerActionType = 'move' | 'attack' | 'ability' | 'wait';
+export type PlayerActionVariant = 'move' | 'attack' | 'ability' | 'wait';
 
 export interface PlayerAction {
-  readonly type: PlayerActionType;
+  readonly variant: PlayerActionVariant;
   readonly targetId?: string;
   readonly targetPosition?: HexCoordinate;
   readonly abilityId?: string;
@@ -131,8 +133,8 @@ export interface ActionSubmissionResult {
   readonly action?: PlayerAction;
 }
 
-export interface PlayerClass extends EntityDefinition {
-  readonly type: 'player';
+export interface PlayerSpecialization extends EntityDefinition {
+  readonly variant: 'player';
   readonly startingAbilities: ReadonlyArray<string>; // IDs of abilities unlocked at start
   readonly progressionTree?: AbilityProgressionNode[];
 }
@@ -145,7 +147,7 @@ export interface AbilityProgressionNode {
 
 // === MONSTER-SPECIFIC TYPES ===
 
-export type MonsterAIType =
+export type MonsterAIVariant =
   | 'passive'
   | 'aggressive'
   | 'defensive'
@@ -165,8 +167,8 @@ export interface ThreatConfig {
 }
 
 export interface MonsterDefinition extends EntityDefinition {
-  readonly type: 'monster';
-  readonly aiType: MonsterAIType;
+  readonly variant: 'monster';
+  readonly aiVariant: MonsterAIVariant;
   readonly threatConfig: ThreatConfig;
   readonly spawnWeight: number;
   readonly difficulty: number;
@@ -182,13 +184,18 @@ export interface MonsterBehavior {
 }
 
 export interface BehaviorCondition {
-  readonly type: 'hp_below' | 'hp_above' | 'enemy_in_range' | 'ally_in_danger' | 'cooldown_ready';
+  readonly variant:
+    | 'hp_below'
+    | 'hp_above'
+    | 'enemy_in_range'
+    | 'ally_in_danger'
+    | 'cooldown_ready';
   readonly value?: number;
   readonly abilityId?: string;
 }
 
 export interface BehaviorAction {
-  readonly type: 'use_ability' | 'move_to' | 'flee' | 'focus_target' | 'call_for_help';
+  readonly variant: 'use_ability' | 'move_to' | 'flee' | 'focus_target' | 'call_for_help';
   readonly abilityId?: string;
   readonly targetType?:
     | 'nearest_enemy'
@@ -208,7 +215,7 @@ export interface LootTableEntry {
 // === NPC-SPECIFIC TYPES ===
 
 export interface NPCDefinition extends EntityDefinition {
-  readonly type: 'npc';
+  readonly variant: 'npc';
   readonly role: 'merchant' | 'quest_giver' | 'ally' | 'neutral' | 'trainer';
   readonly dialogue?: DialogueTree;
   readonly services?: NPCService[];
@@ -233,14 +240,14 @@ export interface DialogueOption {
 }
 
 export interface DialogueCondition {
-  readonly type: 'has_item' | 'level_minimum' | 'quest_completed' | 'stat_minimum';
+  readonly variant: 'has_item' | 'level_minimum' | 'quest_completed' | 'stat_minimum';
   readonly value?: number;
   readonly itemId?: string;
   readonly questId?: string;
 }
 
 export interface DialogueAction {
-  readonly type: 'give_item' | 'take_item' | 'give_quest' | 'complete_quest' | 'teleport';
+  readonly variant: 'give_item' | 'take_item' | 'give_quest' | 'complete_quest' | 'teleport';
   readonly itemId?: string;
   readonly questId?: string;
   readonly quantity?: number;
@@ -248,7 +255,7 @@ export interface DialogueAction {
 }
 
 export interface NPCService {
-  readonly type: 'shop' | 'heal' | 'train' | 'enchant' | 'repair';
+  readonly variant: 'shop' | 'heal' | 'train' | 'enchant' | 'repair';
   readonly cost?: number;
   readonly items?: ShopItem[];
 }
@@ -265,7 +272,7 @@ export interface CombatEntity {
   addStatusEffect(effectName: any, duration: any, value: any): unknown;
   readonly id: string;
   readonly name: string;
-  readonly type: EntityType;
+  readonly variant: EntityVariant;
   readonly position: HexCoordinate;
   readonly isAlive: boolean;
   readonly currentHp: number;
@@ -318,7 +325,7 @@ export interface StatusEffectTarget {
 export interface EntityState {
   readonly id: string;
   readonly name: string;
-  readonly type: EntityType;
+  readonly variant: EntityVariant;
   readonly level: number;
   readonly currentHp: number;
   readonly maxHp: number;
@@ -343,7 +350,7 @@ export interface EntityPrivateData extends EntityPublicData {
 // === PLAYER SPECIFIC DATA ===
 
 export interface PlayerPublicData extends EntityPublicData {
-  readonly className: string;
+  readonly specializationName: string;
   readonly hasSubmittedAction: boolean;
 }
 
@@ -355,7 +362,7 @@ export interface PlayerPrivateData extends EntityPrivateData, PlayerPublicData {
 // === MONSTER SPECIFIC DATA ===
 
 export interface MonsterPublicData extends EntityPublicData {
-  readonly aiType: MonsterAIType;
+  readonly aiVariant: MonsterAIVariant;
   readonly difficulty: number;
   readonly nextDamage: number;
 }
@@ -383,7 +390,7 @@ export interface TargetingResult {
 }
 
 export interface AIDecision {
-  readonly type: 'attack' | 'ability' | 'move' | 'wait' | 'flee';
+  readonly variant: 'attack' | 'ability' | 'move' | 'wait' | 'flee';
   readonly target?: CombatEntity;
   readonly targetPosition?: HexCoordinate;
   readonly abilityId?: string;
@@ -416,7 +423,7 @@ export interface EntityFactory {
   createPlayer(
     id: string,
     name: string,
-    playerClass: PlayerClass,
+    specialization: PlayerSpecialization,
     position?: HexCoordinate
   ): CombatEntity;
   createMonster(
@@ -433,7 +440,7 @@ export interface EntityManager {
   addEntity(entity: CombatEntity): void;
   removeEntity(entityId: string): boolean;
   getEntity(entityId: string): CombatEntity | null;
-  getEntitiesByType(type: EntityType): ReadonlyArray<CombatEntity>;
+  getEntitiesByVariant(variant: EntityVariant): ReadonlyArray<CombatEntity>;
   getEntitiesInRange(center: HexCoordinate, range: number): ReadonlyArray<CombatEntity>;
   getAllEntities(): ReadonlyArray<CombatEntity>;
   processRound(): void;
@@ -462,14 +469,14 @@ export interface EncounterMonster {
 }
 
 export interface MonsterModification {
-  readonly type: 'hp_multiplier' | 'damage_multiplier' | 'add_ability' | 'add_status_effect';
+  readonly variant: 'hp_multiplier' | 'damage_multiplier' | 'add_ability' | 'add_status_effect';
   readonly value?: number;
   readonly abilityId?: string;
   readonly statusEffect?: StatusEffectApplication;
 }
 
 export interface EncounterObjective {
-  readonly type:
+  readonly variant:
     | 'defeat_all'
     | 'defeat_specific'
     | 'survive_rounds'
@@ -483,7 +490,7 @@ export interface EncounterObjective {
 }
 
 export interface EncounterReward {
-  readonly type: 'experience' | 'gold' | 'item' | 'ability_unlock';
+  readonly variant: 'experience' | 'gold' | 'item' | 'ability_unlock';
   readonly value?: number;
   readonly itemId?: string;
   readonly abilityId?: string;
@@ -492,7 +499,7 @@ export interface EncounterReward {
 export interface EnvironmentEffect {
   readonly name: string;
   readonly description: string;
-  readonly type: 'damage_zone' | 'healing_zone' | 'movement_modifier' | 'visibility_modifier';
+  readonly variant: 'damage_zone' | 'healing_zone' | 'movement_modifier' | 'visibility_modifier';
   readonly positions: HexCoordinate[];
   readonly value?: number;
   readonly ticksPerRound?: number;
@@ -506,16 +513,16 @@ export type EntityMapper<T> = (entity: CombatEntity) => T;
 
 // === TYPE GUARDS ===
 
-export function isPlayer(entity: CombatEntity): entity is CombatEntity & { type: 'player' } {
-  return entity.type === 'player';
+export function isPlayer(entity: CombatEntity): entity is CombatEntity & { variant: 'player' } {
+  return entity.variant === 'player';
 }
 
-export function isMonster(entity: CombatEntity): entity is CombatEntity & { type: 'monster' } {
-  return entity.type === 'monster';
+export function isMonster(entity: CombatEntity): entity is CombatEntity & { variant: 'monster' } {
+  return entity.variant === 'monster';
 }
 
-export function isNPC(entity: CombatEntity): entity is CombatEntity & { type: 'npc' } {
-  return entity.type === 'npc';
+export function isNPC(entity: CombatEntity): entity is CombatEntity & { variant: 'npc' } {
+  return entity.variant === 'npc';
 }
 
 export function isAlive(entity: CombatEntity): boolean {

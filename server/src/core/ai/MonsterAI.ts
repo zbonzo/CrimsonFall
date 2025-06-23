@@ -2,21 +2,21 @@
  * @fileoverview AI system for monster behavior and decision making
  * Handles different AI types, behavior evaluation, and action selection
  *
+ * FIXED: Removed reserved keywords 'type' → 'variant', 'class' → 'specialization'
+ *
  * @file server/src/core/ai/MonsterAI.ts
  */
 
+import { ThreatManager } from '@/core/systems/ThreatManager';
 import type {
-  MonsterAIType,
-  MonsterBehavior,
-  BehaviorCondition,
-  BehaviorAction,
-  CombatEntity,
-  TargetingContext,
   AIDecision,
-  AbilityDefinition,
+  BehaviorCondition,
+  CombatEntity,
+  MonsterAIVariant,
+  MonsterBehavior,
+  TargetingContext,
 } from '@/core/types/entityTypes';
 import type { HexCoordinate } from '@/utils/hex/index';
-import { ThreatManager } from '@/core/systems/ThreatManager';
 import { calculateHexDistance } from '@/utils/hexMath';
 
 // === CONSTANTS ===
@@ -29,34 +29,26 @@ const AI_PRIORITIES = {
   MINIMAL: 1,
 } as const;
 
-const AI_CONFIDENCE_THRESHOLDS = {
-  CERTAIN: 0.9,
-  CONFIDENT: 0.7,
-  MODERATE: 0.5,
-  UNCERTAIN: 0.3,
-  RANDOM: 0.1,
-} as const;
-
 // === MONSTER AI ===
 
 /**
  * Handles AI behavior for monsters including target selection and action decisions
  */
 export class MonsterAI {
-  private readonly _aiType: MonsterAIType;
+  private readonly _aiVariant: MonsterAIVariant;
   private readonly _behaviors: MonsterBehavior[];
   private _lastDecision: AIDecision | null = null;
   private _decisionHistory: AIDecision[] = [];
 
-  constructor(aiType: MonsterAIType, behaviors: MonsterBehavior[] = []) {
-    this._aiType = aiType;
+  constructor(aiVariant: MonsterAIVariant, behaviors: MonsterBehavior[] = []) {
+    this._aiVariant = aiVariant;
     this._behaviors = [...behaviors].sort((a, b) => b.priority - a.priority);
   }
 
   // === GETTERS ===
 
-  public get aiType(): MonsterAIType {
-    return this._aiType;
+  public get aiVariant(): MonsterAIVariant {
+    return this._aiVariant;
   }
 
   public get behaviors(): ReadonlyArray<MonsterBehavior> {
@@ -83,7 +75,7 @@ export class MonsterAI {
     }
 
     // Fall back to AI type-based decision making
-    const aiDecision = this.makeAITypeDecision(self, context, threatManager);
+    const aiDecision = this.makeAIVariantDecision(self, context, threatManager);
     this._lastDecision = aiDecision;
     this.recordDecision(aiDecision);
     return aiDecision;
@@ -102,7 +94,7 @@ export class MonsterAI {
     }
 
     // Fall back to AI type-based targeting
-    return this.selectTargetByAIType(availableTargets);
+    return this.selectTargetByAIVariant(availableTargets);
   }
 
   // === BEHAVIOR EVALUATION ===
@@ -127,7 +119,7 @@ export class MonsterAI {
     self: CombatEntity,
     context: TargetingContext
   ): boolean {
-    switch (condition.type) {
+    switch (condition.variant) {
       case 'hp_below':
         return self.currentHp / self.maxHp < (condition.value || 0.5);
 
@@ -161,13 +153,14 @@ export class MonsterAI {
   ): AIDecision | null {
     const action = behavior.action;
 
-    switch (action.type) {
+    switch (action.variant) {
       case 'use_ability':
         if (!action.abilityId) return null;
         const target = this.selectTargetByType(action.targetType, self, context);
+        if (!target) return null; // Early return if no target found
         return {
-          type: 'ability',
-          target: target || undefined,
+          variant: 'ability',
+          target: target,
           abilityId: action.abilityId,
           priority: behavior.priority,
           reasoning: `Using ability ${action.abilityId}`,
@@ -176,7 +169,7 @@ export class MonsterAI {
       case 'move_to':
         if (action.position) {
           return {
-            type: 'move',
+            variant: 'move',
             targetPosition: action.position,
             priority: behavior.priority,
             reasoning: 'Moving to specific position',
@@ -186,7 +179,7 @@ export class MonsterAI {
         const moveTarget = this.selectTargetByType(action.targetType, self, context);
         if (moveTarget) {
           return {
-            type: 'move',
+            variant: 'move',
             targetPosition: this.getPositionNear(moveTarget.position, self),
             priority: behavior.priority,
             reasoning: `Moving toward ${action.targetType}`,
@@ -198,7 +191,7 @@ export class MonsterAI {
         const fleeFrom = this.selectTargetByType(action.targetType, self, context);
         if (fleeFrom) {
           return {
-            type: 'move',
+            variant: 'move',
             targetPosition: this.getFleePosition(self.position, fleeFrom.position),
             priority: behavior.priority,
             reasoning: `Fleeing from ${action.targetType}`,
@@ -208,19 +201,17 @@ export class MonsterAI {
 
       case 'focus_target':
         const focusTarget = this.selectTargetByType(action.targetType, self, context);
-        if (focusTarget) {
-          return {
-            type: 'attack',
-            target: focusTarget,
-            priority: behavior.priority,
-            reasoning: `Focusing on ${action.targetType}`,
-          };
-        }
-        return null;
+        if (!focusTarget) return null; // Early return if no target found
+        return {
+          variant: 'attack',
+          target: focusTarget,
+          priority: behavior.priority,
+          reasoning: `Focusing on ${action.targetType}`,
+        };
 
       case 'call_for_help':
         return {
-          type: 'ability',
+          variant: 'ability',
           abilityId: 'call_for_help',
           priority: behavior.priority,
           reasoning: 'Calling for reinforcements',
@@ -231,14 +222,14 @@ export class MonsterAI {
     }
   }
 
-  // === AI TYPE DECISIONS ===
+  // === AI VARIANT DECISIONS ===
 
-  private makeAITypeDecision(
+  private makeAIVariantDecision(
     self: CombatEntity,
     context: TargetingContext,
     threatManager: ThreatManager
   ): AIDecision {
-    switch (this._aiType) {
+    switch (this._aiVariant) {
       case 'aggressive':
         return this.makeAggressiveDecision(self, context, threatManager);
 
@@ -279,7 +270,7 @@ export class MonsterAI {
       );
 
       return {
-        type: 'attack',
+        variant: 'attack',
         target: nearest,
         priority: AI_PRIORITIES.HIGH,
         reasoning: 'Aggressive AI attacking nearest enemy',
@@ -290,7 +281,7 @@ export class MonsterAI {
     const target = threatManager.selectTarget(context.enemies).target;
     if (target) {
       return {
-        type: 'move',
+        variant: 'move',
         targetPosition: this.getPositionNear(target.position, self),
         priority: AI_PRIORITIES.MEDIUM,
         reasoning: 'Moving toward highest threat target',
@@ -298,7 +289,7 @@ export class MonsterAI {
     }
 
     return {
-      type: 'wait',
+      variant: 'wait',
       priority: AI_PRIORITIES.LOW,
       reasoning: 'No targets available',
     };
@@ -312,7 +303,7 @@ export class MonsterAI {
       // Look for defensive abilities
       // This would need integration with ability system
       return {
-        type: 'move',
+        variant: 'move',
         targetPosition: this.getDefensivePosition(self, context),
         priority: AI_PRIORITIES.HIGH,
         reasoning: 'Defensive retreat when wounded',
@@ -325,16 +316,25 @@ export class MonsterAI {
     );
 
     if (adjacentEnemies.length > 0) {
+      const firstEnemy = adjacentEnemies[0];
+      if (!firstEnemy) {
+        return {
+          variant: 'wait',
+          priority: AI_PRIORITIES.LOW,
+          reasoning: 'No valid adjacent enemies',
+        };
+      }
+
       return {
-        type: 'attack',
-        target: adjacentEnemies[0],
+        variant: 'attack',
+        target: firstEnemy,
         priority: AI_PRIORITIES.MEDIUM,
         reasoning: 'Defensive counterattack',
       };
     }
 
     return {
-      type: 'wait',
+      variant: 'wait',
       priority: AI_PRIORITIES.LOW,
       reasoning: 'Defensive stance',
     };
@@ -343,14 +343,14 @@ export class MonsterAI {
   private makeTacticalDecision(
     self: CombatEntity,
     context: TargetingContext,
-    threatManager: ThreatManager
+    _threatManager: ThreatManager // Underscore prefix to indicate intentionally unused
   ): AIDecision {
     // Prioritize positioning and target selection
     const optimalPosition = this.findOptimalPosition(self, context);
 
     if (optimalPosition && calculateHexDistance(self.position, optimalPosition) > 0) {
       return {
-        type: 'move',
+        variant: 'move',
         targetPosition: optimalPosition,
         priority: AI_PRIORITIES.MEDIUM,
         reasoning: 'Tactical positioning',
@@ -361,7 +361,7 @@ export class MonsterAI {
     const tacticalTarget = this.selectTacticalTarget(context.enemies);
     if (tacticalTarget) {
       return {
-        type: 'attack',
+        variant: 'attack',
         target: tacticalTarget,
         priority: AI_PRIORITIES.HIGH,
         reasoning: 'Tactical target selection',
@@ -369,7 +369,7 @@ export class MonsterAI {
     }
 
     return {
-      type: 'wait',
+      variant: 'wait',
       priority: AI_PRIORITIES.LOW,
       reasoning: 'Waiting for tactical opportunity',
     };
@@ -390,7 +390,7 @@ export class MonsterAI {
 
       if (calculateHexDistance(self.position, weakestEnemy.position) <= 1) {
         return {
-          type: 'attack',
+          variant: 'attack',
           target: weakestEnemy,
           priority,
           reasoning: 'Berserker attacking weakest enemy',
@@ -398,7 +398,7 @@ export class MonsterAI {
       }
 
       return {
-        type: 'move',
+        variant: 'move',
         targetPosition: this.getPositionNear(weakestEnemy.position, self),
         priority,
         reasoning: 'Berserker charging toward weakest enemy',
@@ -406,7 +406,7 @@ export class MonsterAI {
     }
 
     return {
-      type: 'wait',
+      variant: 'wait',
       priority: AI_PRIORITIES.LOW,
       reasoning: 'Berserker waiting for targets',
     };
@@ -422,7 +422,7 @@ export class MonsterAI {
       );
 
       return {
-        type: 'ability',
+        variant: 'ability',
         target: mostWounded,
         abilityId: 'heal', // Would need proper ability lookup
         priority: AI_PRIORITIES.HIGH,
@@ -441,16 +441,25 @@ export class MonsterAI {
     );
 
     if (threateningEnemies.length > 0) {
+      const firstThreat = threateningEnemies[0];
+      if (!firstThreat) {
+        return {
+          variant: 'wait',
+          priority: AI_PRIORITIES.MINIMAL,
+          reasoning: 'No valid threats found',
+        };
+      }
+
       return {
-        type: 'attack',
-        target: threateningEnemies[0],
+        variant: 'attack',
+        target: firstThreat,
         priority: AI_PRIORITIES.MEDIUM,
         reasoning: 'Passive defense when threatened',
       };
     }
 
     return {
-      type: 'wait',
+      variant: 'wait',
       priority: AI_PRIORITIES.MINIMAL,
       reasoning: 'Passive waiting',
     };
@@ -458,10 +467,12 @@ export class MonsterAI {
 
   // === TARGET SELECTION HELPERS ===
 
-  private selectTargetByAIType(availableTargets: ReadonlyArray<CombatEntity>): CombatEntity | null {
+  private selectTargetByAIVariant(
+    availableTargets: ReadonlyArray<CombatEntity>
+  ): CombatEntity | null {
     if (availableTargets.length === 0) return null;
 
-    switch (this._aiType) {
+    switch (this._aiVariant) {
       case 'aggressive':
       case 'berserker':
         // Target with lowest HP for quick elimination
@@ -475,12 +486,13 @@ export class MonsterAI {
       case 'defensive':
       case 'support':
         // Target nearest threat
-        return availableTargets[0]; // Simplified for now
+        return availableTargets[0] || null;
 
       case 'passive':
       default:
         // Random selection
-        return availableTargets[Math.floor(Math.random() * availableTargets.length)];
+        const randomIndex = Math.floor(Math.random() * availableTargets.length);
+        return availableTargets[randomIndex] || null;
     }
   }
 
@@ -494,15 +506,15 @@ export class MonsterAI {
         return this.findNearestEntity(self.position, context.enemies);
 
       case 'weakest_enemy':
-        return context.enemies.reduce(
-          (weakest, current) => (current.currentHp < weakest.currentHp ? current : weakest),
-          context.enemies[0] || null
+        if (context.enemies.length === 0) return null;
+        return context.enemies.reduce((weakest, current) =>
+          current.currentHp < weakest.currentHp ? current : weakest
         );
 
       case 'strongest_enemy':
-        return context.enemies.reduce(
-          (strongest, current) => (current.currentHp > strongest.currentHp ? current : strongest),
-          context.enemies[0] || null
+        if (context.enemies.length === 0) return null;
+        return context.enemies.reduce((strongest, current) =>
+          current.currentHp > strongest.currentHp ? current : strongest
         );
 
       case 'nearest_ally':
@@ -512,7 +524,7 @@ export class MonsterAI {
         return self;
 
       default:
-        return context.enemies[0] || null;
+        return context.enemies.length > 0 ? context.enemies[0] : undefined;
     }
   }
 
@@ -526,8 +538,11 @@ export class MonsterAI {
     }));
 
     // Return highest scoring enemy
-    return scoredEnemies.reduce((best, current) => (current.score > best.score ? current : best))
-      .enemy;
+    const bestEnemy = scoredEnemies.reduce((best, current) =>
+      current.score > best.score ? current : best
+    );
+
+    return bestEnemy.enemy;
   }
 
   private calculateTacticalScore(enemy: CombatEntity): number {
@@ -634,10 +649,10 @@ export class MonsterAI {
 
   public getDecisionStats(): {
     totalDecisions: number;
-    decisionsByType: Record<string, number>;
+    decisionsByVariant: Record<string, number>;
     averagePriority: number;
   } {
-    const decisionsByType: Record<string, number> = {
+    const decisionsByVariant: Record<string, number> = {
       attack: 0,
       ability: 0,
       move: 0,
@@ -648,13 +663,13 @@ export class MonsterAI {
     let totalPriority = 0;
 
     for (const decision of this._decisionHistory) {
-      decisionsByType[decision.type]++;
+      decisionsByVariant[decision.variant]++;
       totalPriority += decision.priority;
     }
 
     return {
       totalDecisions: this._decisionHistory.length,
-      decisionsByType,
+      decisionsByVariant,
       averagePriority:
         this._decisionHistory.length > 0 ? totalPriority / this._decisionHistory.length : 0,
     };
@@ -668,14 +683,14 @@ export class MonsterAI {
   // === DEBUG METHODS ===
 
   public getDebugInfo(): {
-    aiType: MonsterAIType;
+    aiVariant: MonsterAIVariant;
     behaviorsCount: number;
     lastDecision: AIDecision | null;
     decisionHistory: ReadonlyArray<AIDecision>;
     stats: ReturnType<MonsterAI['getDecisionStats']>;
   } {
     return {
-      aiType: this._aiType,
+      aiVariant: this._aiVariant,
       behaviorsCount: this._behaviors.length,
       lastDecision: this._lastDecision,
       decisionHistory: this.getDecisionHistory(),
@@ -690,8 +705,11 @@ export class MonsterAI {
  * Factory for creating pre-configured AI instances
  */
 export class MonsterAIFactory {
-  public static createAI(aiType: MonsterAIType, behaviors: MonsterBehavior[] = []): MonsterAI {
-    return new MonsterAI(aiType, behaviors);
+  public static createAI(
+    aiVariant: MonsterAIVariant,
+    behaviors: MonsterBehavior[] = []
+  ): MonsterAI {
+    return new MonsterAI(aiVariant, behaviors);
   }
 
   public static createAggressiveAI(behaviors: MonsterBehavior[] = []): MonsterAI {
@@ -725,12 +743,12 @@ export class MonsterAIFactory {
 export class BehaviorEvaluator {
   public static evaluateHpCondition(
     entity: CombatEntity,
-    conditionType: 'hp_below' | 'hp_above',
+    conditionVariant: 'hp_below' | 'hp_above',
     threshold: number
   ): boolean {
     const hpPercent = entity.currentHp / entity.maxHp;
 
-    switch (conditionType) {
+    switch (conditionVariant) {
       case 'hp_below':
         return hpPercent < threshold;
       case 'hp_above':
@@ -788,7 +806,7 @@ export class BehaviorEvaluator {
 export class PositionEvaluator {
   public static evaluatePosition(
     position: HexCoordinate,
-    self: CombatEntity,
+    _self: CombatEntity, // Underscore prefix to indicate intentionally unused
     allies: ReadonlyArray<CombatEntity>,
     enemies: ReadonlyArray<CombatEntity>
   ): number {
@@ -814,13 +832,13 @@ export class PositionEvaluator {
   public static findBestPosition(
     currentPosition: HexCoordinate,
     movementRange: number,
-    self: CombatEntity,
+    _self: CombatEntity, // Underscore prefix to indicate intentionally unused
     allies: ReadonlyArray<CombatEntity>,
     enemies: ReadonlyArray<CombatEntity>,
     obstacles: ReadonlySet<string>
   ): HexCoordinate {
     let bestPosition = currentPosition;
-    let bestScore = this.evaluatePosition(currentPosition, self, allies, enemies);
+    let bestScore = this.evaluatePosition(currentPosition, _self, allies, enemies);
 
     // Evaluate positions within movement range
     // This is a simplified implementation - real version would use proper hex range calculation
@@ -855,7 +873,7 @@ export class PositionEvaluator {
           continue;
         }
 
-        const score = this.evaluatePosition(candidatePosition, self, allies, enemies);
+        const score = this.evaluatePosition(candidatePosition, _self, allies, enemies);
         if (score > bestScore) {
           bestScore = score;
           bestPosition = candidatePosition;

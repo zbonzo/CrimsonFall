@@ -1,20 +1,15 @@
 /**
- * @fileoverview Clean player stats management following naming conventions
- * Handles HP, armor, damage calculation, and level progression
+ * @fileoverview Shared entity stats management for Players, Monsters, and NPCs
+ * Extracted from PlayerStatsManager to be reusable across all entity types
  *
- * @file server/src/core/player/PlayerStatsManager.ts
+ * @file server/src/core/entities/EntityStatsManager.ts
  */
 
-import type {
-  PlayerStats,
-  PlayerLevel,
-  DamageResult,
-  HealResult,
-} from '@/core/types/playerTypes.js';
+import type { EntityStats, EntityLevel, DamageResult, HealResult } from '@/core/types/entityTypes';
 
 // === CONSTANTS ===
 
-const DEFAULT_STATS: PlayerStats = {
+const DEFAULT_STATS: EntityStats = {
   maxHp: 100,
   baseArmor: 0,
   baseDamage: 10,
@@ -26,27 +21,30 @@ const MAX_ARMOR_REDUCTION = 0.9;
 const LEVEL_XP_MULTIPLIER = 100;
 const DAMAGE_MODIFIER_PER_LEVEL = 0.1;
 
-// === STATS MANAGER ===
+// === ENTITY STATS MANAGER ===
 
 /**
- * Manages player combat stats with clean naming
+ * Manages entity combat stats - HP, armor, damage, and progression
+ * Generic implementation that works for Players, Monsters, and NPCs
  */
 export class EntityStatsManager {
-  private readonly _baseStats: PlayerStats;
+  private readonly _baseStats: EntityStats;
   private _currentHp: number;
   private _temporaryArmor: number = 0;
   private _damageModifier: number = 1.0;
   private _level: number = 1;
   private _experience: number = 0;
+  private _canLevelUp: boolean;
 
-  constructor(baseStats: PlayerStats = DEFAULT_STATS) {
+  constructor(baseStats: EntityStats = DEFAULT_STATS, canLevelUp: boolean = false) {
     this._baseStats = { ...baseStats };
     this._currentHp = baseStats.maxHp;
+    this._canLevelUp = canLevelUp;
   }
 
   // === GETTERS ===
 
-  public get baseStats(): PlayerStats {
+  public get baseStats(): EntityStats {
     return { ...this._baseStats };
   }
 
@@ -78,8 +76,8 @@ export class EntityStatsManager {
     return this._baseStats.movementRange;
   }
 
-  public get level(): PlayerLevel {
-    const experienceToNext = this.calculateExperienceToNextLevel();
+  public get level(): EntityLevel {
+    const experienceToNext = this._canLevelUp ? this.calculateExperienceToNextLevel() : 0;
     return {
       current: this._level,
       experience: this._experience,
@@ -93,6 +91,10 @@ export class EntityStatsManager {
 
   public get hpPercentage(): number {
     return this._currentHp / this.maxHp;
+  }
+
+  public get canLevelUp(): boolean {
+    return this._canLevelUp;
   }
 
   // === HEALTH MANAGEMENT ===
@@ -123,9 +125,9 @@ export class EntityStatsManager {
     }
 
     const oldHp = this._currentHp;
-
     this._currentHp = Math.min(this.maxHp, this._currentHp + amount);
     const actualHealing = this._currentHp - oldHp;
+
     return {
       amountHealed: actualHealing,
       newHp: this._currentHp,
@@ -134,6 +136,13 @@ export class EntityStatsManager {
 
   public setHp(newHp: number): void {
     this._currentHp = Math.max(0, Math.min(this.maxHp, newHp));
+  }
+
+  public revive(hpPercentage: number = 0.5): void {
+    if (this.isAlive) return;
+
+    const reviveHp = Math.floor(this.maxHp * hpPercentage);
+    this._currentHp = Math.max(1, reviveHp);
   }
 
   public isAtFullHealth(): boolean {
@@ -168,6 +177,10 @@ export class EntityStatsManager {
     this._damageModifier = Math.max(0.1, modifier);
   }
 
+  public addDamageModifier(amount: number): void {
+    this._damageModifier = Math.max(0.1, this._damageModifier + amount);
+  }
+
   // === LEVEL PROGRESSION ===
 
   public addExperience(amount: number): {
@@ -175,7 +188,7 @@ export class EntityStatsManager {
     newLevel?: number;
     benefitsGained?: string[];
   } {
-    if (amount <= 0) {
+    if (!this._canLevelUp || amount <= 0) {
       return { leveledUp: false };
     }
 
@@ -189,6 +202,12 @@ export class EntityStatsManager {
     return { leveledUp: false };
   }
 
+  public setLevel(level: number): void {
+    this._level = Math.max(1, level);
+    this._experience = 0;
+    this.applyLevelModifiers();
+  }
+
   // === UTILITY ===
 
   public resetToStartingStats(): void {
@@ -197,6 +216,11 @@ export class EntityStatsManager {
     this._damageModifier = 1.0;
     this._level = 1;
     this._experience = 0;
+  }
+
+  public resetToFullHealth(): void {
+    this._currentHp = this.maxHp;
+    this._temporaryArmor = 0;
   }
 
   public getCombatReadiness(): {
@@ -238,6 +262,49 @@ export class EntityStatsManager {
     return { healthStatus, armorStatus, damageStatus };
   }
 
+  // === SERIALIZATION ===
+
+  public toData(): {
+    currentHp: number;
+    temporaryArmor: number;
+    damageModifier: number;
+    level: number;
+    experience: number;
+  } {
+    return {
+      currentHp: this._currentHp,
+      temporaryArmor: this._temporaryArmor,
+      damageModifier: this._damageModifier,
+      level: this._level,
+      experience: this._experience,
+    };
+  }
+
+  public fromData(data: {
+    currentHp?: number;
+    temporaryArmor?: number;
+    damageModifier?: number;
+    level?: number;
+    experience?: number;
+  }): void {
+    if (data.currentHp !== undefined) {
+      this._currentHp = Math.max(0, Math.min(this.maxHp, data.currentHp));
+    }
+    if (data.temporaryArmor !== undefined) {
+      this._temporaryArmor = Math.max(0, data.temporaryArmor);
+    }
+    if (data.damageModifier !== undefined) {
+      this._damageModifier = Math.max(0.1, data.damageModifier);
+    }
+    if (data.level !== undefined) {
+      this._level = Math.max(1, data.level);
+      this.applyLevelModifiers();
+    }
+    if (data.experience !== undefined) {
+      this._experience = Math.max(0, data.experience);
+    }
+  }
+
   // === PRIVATE HELPERS ===
 
   private calculateArmorReduction(damage: number, armor: number): number {
@@ -277,6 +344,10 @@ export class EntityStatsManager {
     }
 
     return benefits;
+  }
+
+  private applyLevelModifiers(): void {
+    this._damageModifier = 1.0 + (this._level - 1) * DAMAGE_MODIFIER_PER_LEVEL;
   }
 
   private calculateExperienceToNextLevel(): number {

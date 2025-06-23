@@ -68,7 +68,7 @@ const EFFECT_DESCRIPTIONS: Record<StatusEffectName, string> = {
 /**
  * Manages player status effects with clean naming
  */
-export class PlayerStatusEffectsManager {
+export class EntityStatusEffectsManager {
   private readonly _effects: Map<string, StatusEffect> = new Map();
   private readonly _stacks: Map<string, number> = new Map();
 

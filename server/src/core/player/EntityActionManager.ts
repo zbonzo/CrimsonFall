@@ -2,22 +2,24 @@
  * @fileoverview Clean player action management following naming conventions
  * Handles action submission, validation, and state tracking
  *
- * @file server/src/core/player/PlayerActionManager.ts
+ * FIXED: Removed reserved keywords 'type' → 'variant'
+ *
+ * @file server/src/core/player/EntityActionManager.ts
  */
 
-import type { HexCoordinate } from '@/utils/hex/index.js';
 import type {
-  PlayerAction,
-  PlayerActionType,
   ActionSubmissionResult,
+  PlayerAction,
+  PlayerActionVariant,
 } from '@/core/types/playerTypes.js';
+import type { HexCoordinate } from '@/utils/hex/index.js';
 
 // === ACTION MANAGER ===
 
 /**
  * Manages player action submission with clean naming
  */
-export class PlayerActionManager {
+export class EntityActionManager {
   private _submittedAction: PlayerAction | null = null;
   private _hasSubmittedAction: boolean = false;
   private _actionSubmissionTime: number | null = null;
@@ -44,7 +46,7 @@ export class PlayerActionManager {
   // === ACTION SUBMISSION ===
 
   public submitAction(
-    actionType: PlayerActionType,
+    actionVariant: PlayerActionVariant,
     params: {
       targetId?: string;
       targetPosition?: HexCoordinate;
@@ -58,13 +60,13 @@ export class PlayerActionManager {
       };
     }
 
-    const validation = this.validateActionParameters(actionType, params);
+    const validation = this.validateActionParameters(actionVariant, params);
     if (!validation.success) {
       return validation;
     }
 
     const action: PlayerAction = {
-      type: actionType,
+      variant: actionVariant,
       targetId: params.targetId,
       targetPosition: params.targetPosition,
       abilityId: params.abilityId,
@@ -102,7 +104,7 @@ export class PlayerActionManager {
       submissionTime: Date.now(),
     };
 
-    const validation = this.validateActionParameters(candidateAction.type, {
+    const validation = this.validateActionParameters(candidateAction.variant, {
       targetId: candidateAction.targetId,
       targetPosition: candidateAction.targetPosition,
       abilityId: candidateAction.abilityId,
@@ -137,7 +139,7 @@ export class PlayerActionManager {
       return 0;
     }
 
-    switch (this._submittedAction.type) {
+    switch (this._submittedAction.variant) {
       case 'wait':
         return 4;
       case 'move':
@@ -162,9 +164,9 @@ export class PlayerActionManager {
 
   public getActionStats(): {
     totalActions: number;
-    actionsByType: Record<PlayerActionType, number>;
+    actionsByVariant: Record<PlayerActionVariant, number>;
   } {
-    const actionsByType: Record<PlayerActionType, number> = {
+    const actionsByVariant: Record<PlayerActionVariant, number> = {
       move: 0,
       attack: 0,
       ability: 0,
@@ -172,22 +174,22 @@ export class PlayerActionManager {
     };
 
     for (const action of this._actionHistory) {
-      actionsByType[action.type]++;
+      actionsByVariant[action.variant]++;
     }
 
     return {
       totalActions: this._actionHistory.length,
-      actionsByType,
+      actionsByVariant,
     };
   }
 
   // === PRIVATE HELPERS ===
 
   private validateActionParameters(
-    actionType: PlayerActionType,
+    actionVariant: PlayerActionVariant,
     params: { targetId?: string; targetPosition?: HexCoordinate; abilityId?: string }
   ): ActionSubmissionResult {
-    switch (actionType) {
+    switch (actionVariant) {
       case 'move':
         if (!params.targetPosition) {
           return { success: false, reason: 'Move action requires target position' };
@@ -210,7 +212,7 @@ export class PlayerActionManager {
         break;
 
       default:
-        return { success: false, reason: `Unknown action type: ${actionType}` };
+        return { success: false, reason: `Unknown action variant: ${actionVariant}` };
     }
 
     return { success: true };

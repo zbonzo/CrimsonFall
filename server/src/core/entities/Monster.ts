@@ -2,35 +2,37 @@
  * @fileoverview Complete Monster entity implementation
  * Fixed import paths, integrated shared managers, simplified AI integration
  *
+ * FIXED: Removed reserved keywords 'type' → 'variant', 'class' → 'specialization'
+ *
  * @file server/src/core/entities/Monster.ts
  */
 
-import type { HexCoordinate } from '@/utils/hex/index.js';
 import type {
-  MonsterDefinition,
-  MonsterAIType,
-  CombatEntity,
-  MovableEntity,
+  AbilityDefinition,
   AbilityUser,
-  StatusEffectTarget,
-  TargetingContext,
   AIDecision,
-  MonsterPublicData,
-  MonsterPrivateData,
+  CombatEntity,
   DamageResult,
   HealResult,
+  MonsterAIVariant,
+  MonsterDefinition,
+  MonsterPrivateData,
+  MonsterPublicData,
+  MovableEntity,
   MovementResult,
-  AbilityDefinition,
   StatusEffect,
+  StatusEffectTarget,
+  TargetingContext,
   ThreatUpdate,
 } from '@/core/types/entityTypes';
+import type { HexCoordinate } from '@/utils/hex/index.js';
 
-import { EntityStatsManager } from '@/core/entities/EntityStatsManager';
-import { PlayerMovementManager as EntityMovementManager } from '@/core/player/EntityMovementManager';
-import { PlayerAbilitiesManager as EntityAbilitiesManager } from '@/core/player/EntityAbilitiesManager';
-import { PlayerStatusEffectsManager as EntityStatusEffectsManager } from '@/core/player/EntityStatusEffectsManager';
 import { MonsterAI } from '@/core/ai/MonsterAI';
-import { ThreatManager, ThreatCalculator } from '@/core/systems/ThreatManager';
+import { EntityStatsManager } from '@/core/entities/EntityStatsManager';
+import { PlayerAbilitiesManager as EntityAbilitiesManager } from '@/core/player/EntityAbilitiesManager';
+import { PlayerMovementManager as EntityMovementManager } from '@/core/player/EntityMovementManager';
+import { PlayerStatusEffectsManager as EntityStatusEffectsManager } from '@/core/player/EntityStatusEffectsManager';
+import { ThreatCalculator, ThreatManager } from '@/core/systems/ThreatManager';
 
 // === CONSTANTS ===
 
@@ -44,8 +46,8 @@ const DEFAULT_POSITION: HexCoordinate = { q: 0, r: 0, s: 0 } as const;
 export class Monster implements CombatEntity, MovableEntity, AbilityUser, StatusEffectTarget {
   public readonly id: string;
   public readonly name: string;
-  public readonly type: 'monster' = 'monster';
-  public readonly aiType: MonsterAIType;
+  public readonly variant: 'monster' = 'monster';
+  public readonly aiVariant: MonsterAIVariant;
   public readonly difficulty: number;
 
   private readonly _definition: MonsterDefinition;
@@ -70,7 +72,7 @@ export class Monster implements CombatEntity, MovableEntity, AbilityUser, Status
 
     this.id = id;
     this.name = definition.name;
-    this.aiType = definition.aiType;
+    this.aiVariant = definition.aiVariant;
     this.difficulty = definition.difficulty;
     this._definition = definition;
 
@@ -81,7 +83,7 @@ export class Monster implements CombatEntity, MovableEntity, AbilityUser, Status
     this._statusEffects = new EntityStatusEffectsManager();
 
     // Initialize monster-specific systems
-    this._ai = new MonsterAI(definition.aiType, definition.behaviors || []);
+    this._ai = new MonsterAI(definition.aiVariant, definition.behaviors || []);
     this._threat = new ThreatManager(definition.threatConfig);
   }
 
@@ -244,7 +246,7 @@ export class Monster implements CombatEntity, MovableEntity, AbilityUser, Status
   public makeDecision(context: TargetingContext): AIDecision {
     if (!this.canAct()) {
       return {
-        type: 'wait',
+        variant: 'wait',
         priority: 0,
         reasoning: 'Cannot act due to status effects',
       };
@@ -336,7 +338,7 @@ export class Monster implements CombatEntity, MovableEntity, AbilityUser, Status
     // Try to find basic attack ability first
     const basicAttack =
       this.getAbility('basic_attack') ||
-      this.getAvailableAbilities().find(ability => ability.type === 'attack');
+      this.getAvailableAbilities().find(ability => ability.variant === 'attack');
 
     if (basicAttack?.damage) {
       return this.calculateDamageOutput(basicAttack.damage);
@@ -408,7 +410,7 @@ export class Monster implements CombatEntity, MovableEntity, AbilityUser, Status
     return {
       id: this.id,
       name: this.name,
-      type: this.type,
+      variant: this.variant,
       level: this.level,
       currentHp: this.currentHp,
       maxHp: this.maxHp,
@@ -418,7 +420,7 @@ export class Monster implements CombatEntity, MovableEntity, AbilityUser, Status
       hasMovedThisRound: this.hasMovedThisRound,
       statusEffects: this.activeStatusEffects,
       availableAbilities: this.getAvailableAbilities(),
-      aiType: this.aiType,
+      aiVariant: this.aiVariant,
       difficulty: this.difficulty,
       nextDamage: this.calculateNextAttackDamage(),
     };
@@ -458,8 +460,8 @@ export class Monster implements CombatEntity, MovableEntity, AbilityUser, Status
   public toString(): string {
     const status = this.isAlive ? `${this.currentHp}/${this.maxHp} HP` : 'DEAD';
     const pos = `(${this.position.q},${this.position.r})`;
-    const ai = `AI: ${this.aiType}`;
-    const action = this._lastDecision ? `Last: ${this._lastDecision.type}` : 'No action';
+    const ai = `AI: ${this.aiVariant}`;
+    const action = this._lastDecision ? `Last: ${this._lastDecision.variant}` : 'No action';
 
     return `Monster[${this.name}] L${this.level} ${ai} ${status} ${pos} ${action}`;
   }
@@ -484,11 +486,11 @@ export class MonsterFactory {
     const definition: MonsterDefinition = {
       id: configData.id,
       name: configData.name,
-      type: 'monster',
+      variant: 'monster',
       description: configData.description,
       stats: configData.stats,
       abilities: configData.abilities,
-      aiType: configData.aiType,
+      aiVariant: configData.aiType, // Note: config uses 'aiType' but we use 'aiVariant'
       threatConfig: configData.threatConfig,
       spawnWeight: configData.spawnWeight,
       difficulty: configData.difficulty,
@@ -526,7 +528,7 @@ export class MonsterFactory {
     const definition: MonsterDefinition = {
       id: 'simple_monster',
       name,
-      type: 'monster',
+      variant: 'monster',
       description: 'A simple monster for testing',
       stats: {
         maxHp: 50,
@@ -538,14 +540,14 @@ export class MonsterFactory {
         {
           id: 'basic_attack',
           name: 'Basic Attack',
-          type: 'attack',
+          variant: 'attack',
           damage: 12,
           range: 1,
           cooldown: 0,
           description: 'A simple melee attack',
         },
       ],
-      aiType: 'aggressive',
+      aiVariant: 'aggressive',
       threatConfig: {
         enabled: false, // Disable for simplicity
         decayRate: 0.1,

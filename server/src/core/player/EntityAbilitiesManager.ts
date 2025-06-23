@@ -2,17 +2,23 @@
  * @fileoverview Clean player abilities management following naming conventions
  * Handles ability definitions, cooldowns, and usage validation
  *
- * @file server/src/core/player/PlayerAbilitiesManager.ts
+ * FIXED: Removed reserved keywords 'type' → 'variant'
+ *
+ * @file server/src/core/player/EntityAbilitiesManager.ts
  */
 
-import type { AbilityDefinition, AbilityType, AbilityCooldown } from '@/core/types/playerTypes.js';
+import type {
+  AbilityCooldown,
+  AbilityDefinition,
+  AbilityVariant,
+} from '@/core/types/playerTypes.js';
 
 // === ABILITIES MANAGER ===
 
 /**
  * Manages player abilities and cooldowns with clean naming
  */
-export class PlayerAbilitiesManager {
+export class EntityAbilitiesManager {
   private readonly _classAbilities: ReadonlyArray<AbilityDefinition>;
   private readonly _unlockedAbilities: Set<string> = new Set();
   private readonly _cooldowns: Map<string, number> = new Map();
@@ -26,7 +32,7 @@ export class PlayerAbilitiesManager {
     this.addAbility({
       id: 'basic_attack',
       name: 'Basic Attack',
-      type: 'attack',
+      variant: 'attack',
       damage: 10,
       range: 1,
       cooldown: 0,
@@ -36,7 +42,7 @@ export class PlayerAbilitiesManager {
     this.addAbility({
       id: 'wait',
       name: 'Wait',
-      type: 'utility',
+      variant: 'utility',
       range: 0,
       cooldown: 0,
       description: 'Skip your turn',
@@ -73,8 +79,8 @@ export class PlayerAbilitiesManager {
     return this.abilities.find(ability => ability.id === abilityId) || null;
   }
 
-  public getAbilitiesByType(type: AbilityType): ReadonlyArray<AbilityDefinition> {
-    return this.unlockedAbilities.filter(ability => ability.type === type);
+  public getAbilitiesByVariant(variant: AbilityVariant): ReadonlyArray<AbilityDefinition> {
+    return this.unlockedAbilities.filter(ability => ability.variant === variant);
   }
 
   public hasAbility(abilityId: string): boolean {
@@ -240,7 +246,7 @@ export class PlayerAbilitiesManager {
     this.addAbility({
       id: 'basic_attack',
       name: 'Basic Attack',
-      type: 'attack',
+      variant: 'attack',
       damage: 10,
       range: 1,
       cooldown: 0,
@@ -250,7 +256,7 @@ export class PlayerAbilitiesManager {
     this.addAbility({
       id: 'wait',
       name: 'Wait',
-      type: 'utility',
+      variant: 'utility',
       range: 0,
       cooldown: 0,
       description: 'Skip your turn',
@@ -299,9 +305,9 @@ export class PlayerAbilitiesManager {
     }
 
     return (
-      ability.type === 'attack' ||
-      (ability.type === 'healing' && ability.range > 0) ||
-      (ability.type === 'defense' && ability.range > 0)
+      ability.variant === 'attack' ||
+      (ability.variant === 'healing' && ability.range > 0) ||
+      (ability.variant === 'defense' && ability.range > 0)
     );
   }
 }

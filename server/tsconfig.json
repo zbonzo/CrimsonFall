@@ -1,15 +1,33 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
+    "moduleResolution": "node",
     "baseUrl": ".",
     "rootDir": "./src",
     "outDir": "./dist",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noImplicitAny": false,
+    "sourceMap": false,
     "paths": {
       "@/*": ["./src/*"],
       "@/core/*": ["./src/core/*"],
       "@/utils/*": ["./src/utils/*"],
       "@/shared/*": ["../shared/src/*"],
-      "@/tests/*": ["../tests/*"]
+      "@/tests/*": ["../tests/*"],
+      "@/client/*": ["../client/src/*"],
+      "@/server/*": ["./src/*"],
+      "@/systems/*": ["./src/core/systems/*"],
+      "@/entities/*": ["./src/core/entities/*"],
+      "@/config/*": ["./src/config/*"],
+      "@/types/*": ["./src/types/*"],
+      "@/assets/*": ["./src/assets/*"],
+      "@/hooks/*": ["./src/hooks/*"],
+      "@/services/*": ["./src/services/*"],
+      "@/components/*": ["./src/components/*"],
+      "@/constants/*": ["./src/constants/*"]
     }
   },
   "include": ["src/**/*"],

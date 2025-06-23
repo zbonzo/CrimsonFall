@@ -2,10 +2,12 @@
  * @fileoverview Player-related type definitions and interfaces
  * Core types for player entities, actions, and state management
  *
+ * FIXED: Removed reserved keywords 'type' → 'variant', 'class' → 'specialization'
+ *
  * @file server/src/core/types/playerTypes.ts
  */
 
-import type { HexCoordinate } from '@/utils/hex/index.js';
+import type { HexCoordinate } from '@/utils/hex/index.ts';
 
 // === PLAYER IDENTITY ===
 
@@ -19,10 +21,10 @@ export interface PlayerName {
 
 // === PLAYER ACTIONS ===
 
-export type PlayerActionType = 'move' | 'attack' | 'ability' | 'wait';
+export type PlayerActionVariant = 'move' | 'attack' | 'ability' | 'wait';
 
 export interface PlayerAction {
-  readonly type: PlayerActionType;
+  readonly variant: PlayerActionVariant;
   readonly targetId?: string;
   readonly targetPosition?: HexCoordinate;
   readonly abilityId?: string;
@@ -52,12 +54,12 @@ export interface PlayerLevel {
 
 // === ABILITIES ===
 
-export type AbilityType = 'attack' | 'defense' | 'utility' | 'healing';
+export type AbilityVariant = 'attack' | 'defense' | 'utility' | 'healing';
 
 export interface AbilityDefinition {
   readonly id: string;
   readonly name: string;
-  readonly type: AbilityType;
+  readonly variant: AbilityVariant;
   readonly damage?: number;
   readonly healing?: number;
   readonly range: number;
@@ -87,9 +89,9 @@ export interface StatusEffectResult {
   }>;
 }
 
-// === PLAYER CLASS ===
+// === PLAYER SPECIALIZATION ===
 
-export interface PlayerClass {
+export interface PlayerSpecialization {
   readonly name: string;
   readonly stats: PlayerStats;
   readonly abilities: ReadonlyArray<AbilityDefinition>;
@@ -136,7 +138,7 @@ export interface PlayerState {
 export interface PlayerPublicData {
   readonly id: string;
   readonly name: string;
-  readonly className: string;
+  readonly specializationName: string;
   readonly level: number;
   readonly currentHp: number;
   readonly maxHp: number;
