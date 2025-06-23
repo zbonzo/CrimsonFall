@@ -16,8 +16,7 @@ import type {
   MonsterBehavior,
   TargetingContext,
 } from '@/core/types/entityTypes.js';
-import type { HexCoordinate } from '@/utils/hex/index.js';
-import { calculateHexDistance } from '@/utils/hexMath.js';
+import { calculateHexDistance, type HexCoordinate } from '@/utils/hex/index.js';
 
 // === CONSTANTS ===
 

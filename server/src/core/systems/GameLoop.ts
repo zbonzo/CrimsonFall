@@ -19,11 +19,10 @@ import type {
   TargetingContext,
 } from '@/core/types/entityTypes.js';
 import type { PlayerAction } from '@/core/types/playerTypes.js';
-import type { HexCoordinate } from '@/utils/hex/index.js';
+import { calculateHexDistance, type HexCoordinate } from '@/utils/hex/index.js';
 
 import { Monster, MonsterFactory } from '@/core/entities/Monster.js';
 import { Player } from '@/core/entities/Player.js';
-import { calculateHexDistance } from '@/utils/hexMath.js';
 
 // === GAME LOOP TYPES ===
 
