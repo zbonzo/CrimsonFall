@@ -5,15 +5,15 @@
  * @file server/src/core/player/PlayerMovementManager.ts
  */
 
-import type { HexCoordinate, MovementRange } from '@/utils/hex/hexCoordinates';
+import type { HexCoordinate, MovementRange } from '@/utils/hex/hexCoordinates.js';
 import {
   calculateHexDistance,
   createHexCoordinate,
   findHexPath,
   getHexesInRange,
-} from '@/utils/hexMath';
+} from '@/utils/hexMath.js';
 
-import type { MovementResult } from '../types/playerTypes';
+import type { MovementResult } from '../types/playerTypes.js';
 
 // === CONSTANTS ===
 
@@ -106,7 +106,7 @@ export class EntityMovementManager {
   ): MovementResult {
     const moveCheck = this.canMove();
     if (!moveCheck.allowed) {
-      return { success: false, reason: moveCheck.reason ?? "Movement not allowed" };
+      return { success: false, reason: moveCheck.reason ?? 'Movement not allowed' };
     }
 
     if (!this.isPositionReachable(targetPosition)) {
@@ -119,7 +119,7 @@ export class EntityMovementManager {
 
     const validityCheck = this.isPositionValid(targetPosition, occupiedPositions, obstacles);
     if (!validityCheck.valid) {
-      return { success: false, reason: validityCheck.reason ?? "Position invalid" };
+      return { success: false, reason: validityCheck.reason ?? 'Position invalid' };
     }
 
     this._currentPosition = targetPosition;
@@ -187,7 +187,7 @@ export class EntityMovementManager {
       (a, b) => calculateHexDistance(a, targetPosition) - calculateHexDistance(b, targetPosition)
     );
 
-    return safePositions[0];
+    return safePositions[0] ?? null;
   }
 
   // === ROUND MANAGEMENT ===
@@ -222,10 +222,11 @@ export class EntityMovementManager {
   }
 
   public stringToPosition(positionString: string): HexCoordinate {
-    const [q, r, s] = positionString.split(',').map(Number);
+    const [qStr, rStr, sStr] = positionString.split(',');
+    const q = parseInt(qStr || '0', 10);
+    const r = parseInt(rStr || '0', 10);
     return createHexCoordinate(q, r);
   }
-
   public getMovementStats(): {
     totalMoves: number;
     currentRoundMoved: boolean;
@@ -236,7 +237,11 @@ export class EntityMovementManager {
 
     let totalDistance = 0;
     for (let i = 1; i < this._movementHistory.length; i++) {
-      totalDistance += calculateHexDistance(this._movementHistory[i - 1], this._movementHistory[i]);
+      const prevPos = this._movementHistory[i - 1];
+      const currentPos = this._movementHistory[i];
+      if (prevPos && currentPos) {
+        totalDistance += calculateHexDistance(prevPos, currentPos);
+      }
     }
 
     const uniquePositions = new Set(this._movementHistory.map(pos => this.positionToString(pos)));

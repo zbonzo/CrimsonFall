@@ -3,6 +3,8 @@
  * Handles combat rounds, action processing, and game state management
  *
  * FIXED: Removed reserved keywords 'type' → 'variant', 'class' → 'specialization'
+ * FIXED: AbilityDefinition.type → AbilityDefinition.variant
+ * FIXED: PlayerClass type definition and references
  *
  * @file server/src/core/systems/GameLoop.ts
  */
@@ -12,15 +14,16 @@ import type {
   AIDecision,
   CombatEntity,
   MovableEntity,
+  PlayerSpecialization,
   StatusEffectTarget,
   TargetingContext,
-} from '@/core/types/entityTypes';
-import type { PlayerAction } from '@/core/types/playerTypes';
-import type { HexCoordinate } from '@/utils/hex/index';
+} from '@/core/types/entityTypes.js';
+import type { PlayerAction } from '@/core/types/playerTypes.js';
+import type { HexCoordinate } from '@/utils/hex/index.js';
 
-import { Monster, MonsterFactory } from '@/core/entities/Monster';
-import { Player } from '@/core/entities/Player';
-import { calculateHexDistance } from '@/utils/hexMath';
+import { Monster, MonsterFactory } from '@/core/entities/Monster.js';
+import { Player } from '@/core/entities/Player.js';
+import { calculateHexDistance } from '@/utils/hexMath.js';
 
 // === GAME LOOP TYPES ===
 
@@ -35,8 +38,8 @@ export interface RoundResult {
   readonly actionResults: ActionResult[];
   readonly statusEffectResults: StatusEffectResults;
   readonly gameEnded: boolean;
-  readonly winner?: 'players' | 'monsters' | 'draw';
-  readonly reason?: string;
+  readonly winner?: 'players' | 'monsters' | 'draw' | undefined;
+  readonly reason?: string | undefined;
 }
 
 export interface ActionResult {
@@ -211,8 +214,8 @@ export class GameLoop {
         currentRound: this._currentRound,
       };
 
-      const decision = monster.makeDecision(context);
       // AI decision is stored in the monster, will be processed in processAllActions
+      monster.makeDecision(context);
     }
   }
 
@@ -462,7 +465,7 @@ export class GameLoop {
       }
 
       // Apply ability effects
-      if (ability.damage && ability.type === 'attack') {
+      if (ability.damage && ability.variant === 'attack') {
         const damage = caster.calculateDamageOutput(ability.damage);
         const damageResult = targetEntity.takeDamage(damage, `${ability.name}`);
         damageDealt = damageResult.damageDealt;
@@ -481,7 +484,7 @@ export class GameLoop {
         }
       }
 
-      if (ability.healing && ability.type === 'healing') {
+      if (ability.healing && ability.variant === 'healing') {
         const healResult = targetEntity.heal(ability.healing);
         healingDone = healResult.amountHealed;
 
@@ -732,10 +735,10 @@ export class GameLoop {
 export class GameLoopFactory {
   public static createTestScenario(): GameLoop {
     // Create test players
-    const testPlayerClass: PlayerClass = {
+    const testPlayerSpecialization: PlayerSpecialization = {
       id: 'test_fighter',
       name: 'Fighter',
-      type: 'player',
+      variant: 'player',
       description: 'A test fighter class',
       stats: {
         maxHp: 100,
@@ -747,7 +750,7 @@ export class GameLoopFactory {
         {
           id: 'power_strike',
           name: 'Power Strike',
-          type: 'attack' as const,
+          variant: 'attack',
           damage: 20,
           range: 1,
           cooldown: 2,
@@ -756,7 +759,7 @@ export class GameLoopFactory {
         {
           id: 'heal_self',
           name: 'Second Wind',
-          type: 'healing' as const,
+          variant: 'healing',
           healing: 25,
           range: 0,
           cooldown: 3,
@@ -767,8 +770,8 @@ export class GameLoopFactory {
     };
 
     const players = [
-      new Player('player1', 'Hero', testPlayerClass, { q: 0, r: 0, s: 0 }),
-      new Player('player2', 'Sidekick', testPlayerClass, { q: 1, r: 0, s: -1 }),
+      new Player('player1', 'Hero', testPlayerSpecialization, { q: 0, r: 0, s: 0 }),
+      new Player('player2', 'Sidekick', testPlayerSpecialization, { q: 1, r: 0, s: -1 }),
     ];
 
     // Create test monsters
@@ -785,10 +788,10 @@ export class GameLoopFactory {
   }
 
   public static createSoloScenario(): GameLoop {
-    const soloPlayerClass: PlayerClass = {
+    const soloPlayerSpecialization: PlayerSpecialization = {
       id: 'solo_hero',
       name: 'Solo Hero',
-      type: 'player',
+      variant: 'player',
       description: 'A powerful solo adventurer',
       stats: {
         maxHp: 150,
@@ -800,7 +803,7 @@ export class GameLoopFactory {
         {
           id: 'whirlwind',
           name: 'Whirlwind',
-          type: 'attack' as const,
+          variant: 'attack',
           damage: 15,
           range: 1,
           cooldown: 3,
@@ -811,7 +814,9 @@ export class GameLoopFactory {
       startingAbilities: ['whirlwind'],
     };
 
-    const players = [new Player('solo_player', 'Lone Wolf', soloPlayerClass, { q: 0, r: 0, s: 0 })];
+    const players = [
+      new Player('solo_player', 'Lone Wolf', soloPlayerSpecialization, { q: 0, r: 0, s: 0 }),
+    ];
 
     const monsters = [
       MonsterFactory.createSimpleMonster('weak1', 'Weak Goblin', { q: 2, r: 0, s: -2 }),

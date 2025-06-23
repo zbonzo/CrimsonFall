@@ -7,7 +7,7 @@
  * @file server/src/core/ai/MonsterAI.ts
  */
 
-import { ThreatManager } from '@/core/systems/ThreatManager';
+import { ThreatManager } from '@/core/systems/ThreatManager.js';
 import type {
   AIDecision,
   BehaviorCondition,
@@ -15,9 +15,9 @@ import type {
   MonsterAIVariant,
   MonsterBehavior,
   TargetingContext,
-} from '@/core/types/entityTypes';
-import type { HexCoordinate } from '@/utils/hex/index';
-import { calculateHexDistance } from '@/utils/hexMath';
+} from '@/core/types/entityTypes.js';
+import type { HexCoordinate } from '@/utils/hex/index.js';
+import { calculateHexDistance } from '@/utils/hexMath.js';
 
 // === CONSTANTS ===
 
@@ -524,7 +524,7 @@ export class MonsterAI {
         return self;
 
       default:
-        return context.enemies.length > 0 ? context.enemies[0] : null; // Default to first enemy
+        return context.enemies.length > 0 ? context.enemies[0] || null : null; // Default to first enemy
     }
   }
 
@@ -652,18 +652,13 @@ export class MonsterAI {
     decisionsByVariant: Record<string, number>;
     averagePriority: number;
   } {
-    const decisionsByVariant: Record<string, number> = {
-      attack: 0,
-      ability: 0,
-      move: 0,
-      wait: 0,
-      flee: 0,
-    };
+    const decisionsByVariant: Record<string, number> = {};
 
     let totalPriority = 0;
 
     for (const decision of this._decisionHistory) {
-      decisionsByVariant[decision.variant]++;
+      const variant = decision.variant;
+      decisionsByVariant[variant] = (decisionsByVariant[variant] || 0) + 1;
       totalPriority += decision.priority;
     }
 

@@ -22,17 +22,17 @@ import type {
   PlayerSpecialization,
   StatusEffectResult,
   StatusEffectTarget,
-} from '@/core/types/entityTypes.ts';
-import type { HexCoordinate } from '@/utils/hex/index.ts';
+} from '@/core/types/entityTypes.js';
+import type { HexCoordinate } from '@/utils/hex/index.js';
 
-import { EntityAbilitiesManager } from '@/core/player/EntityAbilitiesManager';
-import { EntityActionManager } from '@/core/player/EntityActionManager';
-import { EntityMovementManager } from '@/core/player/EntityMovementManager';
-import { EntityStatsManager } from '@/core/player/EntityStatsManager';
+import { EntityAbilitiesManager } from '@/core/player/EntityAbilitiesManager.js';
+import { EntityActionManager } from '@/core/player/EntityActionManager.js';
+import { EntityMovementManager } from '@/core/player/EntityMovementManager.js';
+import { EntityStatsManager } from '@/core/player/EntityStatsManager.js';
 import {
   EntityStatusEffectsManager,
   type StatusEffectName,
-} from '@/core/player/EntityStatusEffectsManager';
+} from '@/core/player/EntityStatusEffectsManager.js';
 
 // === CONSTANTS ===
 
@@ -214,21 +214,7 @@ export class Player implements CombatEntity, MovableEntity, AbilityUser, StatusE
     duration: number,
     value?: number
   ): { success: boolean; reason?: string; stacks?: number } {
-    const result = this._statusEffects.addEffect(effectName, duration, value);
-
-    const returnValue: { success: boolean; reason?: string; stacks?: number } = {
-      success: result.success,
-    };
-
-    if (result.reason !== undefined) {
-      returnValue.reason = result.reason;
-    }
-
-    if (result.stacks !== undefined) {
-      returnValue.stacks = result.stacks;
-    }
-
-    return returnValue;
+    return this._statusEffects.addEffect(effectName, duration, value);
   }
   public hasStatusEffect(effectName: string): boolean {
     return this._statusEffects.hasEffect(effectName);

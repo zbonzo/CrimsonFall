@@ -5,7 +5,12 @@
  * @file server/src/core/entities/EntityStatsManager.ts
  */
 
-import type { EntityStats, EntityLevel, DamageResult, HealResult } from '@/core/types/entityTypes';
+import type {
+  DamageResult,
+  EntityLevel,
+  EntityStats,
+  HealResult,
+} from '@/core/types/entityTypes.js';
 
 // === CONSTANTS ===
 

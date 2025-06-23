@@ -121,9 +121,9 @@ export type PlayerActionVariant = 'move' | 'attack' | 'ability' | 'wait';
 
 export interface PlayerAction {
   readonly variant: PlayerActionVariant;
-  readonly targetId?: string;
-  readonly targetPosition?: HexCoordinate;
-  readonly abilityId?: string;
+  readonly targetId?: string | undefined;
+  readonly targetPosition?: HexCoordinate | undefined;
+  readonly abilityId?: string | undefined;
   readonly submissionTime: number;
 }
 

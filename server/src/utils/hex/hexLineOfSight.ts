@@ -6,7 +6,7 @@
  * @file server/src/utils/hex/hexLineOfSight.ts
  */
 
-import { calculateHexDistance, roundHex, HexCoordinate } from './hexCoordinates.js';
+import { calculateHexDistance, roundHex, type HexCoordinate } from './hexCoordinates.js';
 
 /**
  * Checks if there's a clear line of sight between two hexes
@@ -22,12 +22,15 @@ export function hasLineOfSight(
     return true;
   }
 
-  const hexToString = (hex: HexCoordinate) => `${hex.q},${hex.s},${hex.r}`;
+  const hexToString = (hex: HexCoordinate): string => `${hex.q},${hex.r},${hex.s}`;
 
   const lineHexes = getHexLine(from, to);
 
   for (let i = 1; i < lineHexes.length - 1; i++) {
-    const currentHexAsString = hexToString(lineHexes[i]!);
+    const currentHex = lineHexes[i];
+    if (!currentHex) continue;
+
+    const currentHexAsString = hexToString(currentHex);
     if (obstacles.has(currentHexAsString)) {
       return false;
     }
@@ -41,7 +44,7 @@ export function hasLineOfSight(
  */
 export function getHexLine(from: HexCoordinate, to: HexCoordinate): HexCoordinate[] {
   const distance = calculateHexDistance(from, to);
-  const line = [];
+  const line: HexCoordinate[] = [];
 
   for (let i = 0; i <= distance; i++) {
     const t = distance === 0 ? 0 : i / distance;

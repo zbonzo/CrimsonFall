@@ -25,16 +25,19 @@ import type {
   StatusEffectTarget,
   TargetingContext,
   ThreatUpdate,
-} from '@/core/types/entityTypes';
+} from '@/core/types/entityTypes.js';
 import { ORIGIN_HEX, type HexCoordinate } from '@/utils/hex/index.js';
 
-import { MonsterAI } from '@/core/ai/MonsterAI';
+import { MonsterAI } from '@/core/ai/MonsterAI.js';
 // FIXED: Corrected import paths - these managers are shared across entities
-import { EntityAbilitiesManager } from '@/core/player/EntityAbilitiesManager';
-import { EntityMovementManager } from '@/core/player/EntityMovementManager';
-import { EntityStatsManager } from '@/core/player/EntityStatsManager';
-import { EntityStatusEffectsManager } from '@/core/player/EntityStatusEffectsManager';
-import { ThreatCalculator, ThreatManager } from '@/core/systems/ThreatManager';
+import { EntityAbilitiesManager } from '@/core/player/EntityAbilitiesManager.js';
+import { EntityMovementManager } from '@/core/player/EntityMovementManager.js';
+import { EntityStatsManager } from '@/core/player/EntityStatsManager.js';
+import {
+  EntityStatusEffectsManager,
+  type StatusEffectName,
+} from '@/core/player/EntityStatusEffectsManager.js';
+import { ThreatCalculator, ThreatManager } from '@/core/systems/ThreatManager.js';
 
 export class Monster implements CombatEntity, MovableEntity, AbilityUser, StatusEffectTarget {
   public readonly id: string;
@@ -214,12 +217,11 @@ export class Monster implements CombatEntity, MovableEntity, AbilityUser, Status
   // === STATUS EFFECTS INTERFACE ===
 
   public addStatusEffect(
-    effectName: string,
+    effectName: StatusEffectName,
     duration: number,
     value?: number
-  ): { success: boolean; reason?: string } {
-    const result = this._statusEffects.addEffect(effectName as any, duration, value);
-    return { success: result.success, reason: result.reason };
+  ): { success: boolean; reason?: string; stacks?: number } {
+    return this._statusEffects.addEffect(effectName, duration, value);
   }
 
   public hasStatusEffect(effectName: string): boolean {

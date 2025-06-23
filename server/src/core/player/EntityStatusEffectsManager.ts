@@ -63,19 +63,31 @@ const EFFECT_DESCRIPTIONS: Record<StatusEffectName, string> = {
   cursed: 'Reduced healing received',
 };
 
+// Internal representation to correctly handle stacking
+interface InternalEffectData {
+  duration: number;
+  baseValue?: number;
+  description: string;
+}
+
 // === STATUS EFFECTS MANAGER ===
 
 /**
  * Manages player status effects with clean naming
  */
 export class EntityStatusEffectsManager {
-  private readonly _effects: Map<string, StatusEffect> = new Map();
+  private readonly _effects: Map<string, InternalEffectData> = new Map();
   private readonly _stacks: Map<string, number> = new Map();
 
   // === GETTERS ===
 
   public get effects(): ReadonlyArray<StatusEffect> {
-    return Array.from(this._effects.values());
+    const result: StatusEffect[] = [];
+    for (const name of this._effects.keys()) {
+      // Non-null assertion is safe here because we are iterating over existing keys
+      result.push(this.getEffect(name)!);
+    }
+    return result;
   }
 
   public get effectNames(): ReadonlyArray<string> {
@@ -93,7 +105,23 @@ export class EntityStatusEffectsManager {
   }
 
   public getEffect(effectName: string): StatusEffect | null {
-    return this._effects.get(effectName) || null;
+    const data = this._effects.get(effectName);
+    if (!data) {
+      return null;
+    }
+
+    const stacks = this._stacks.get(effectName) || 1;
+    // Construct the object carefully to satisfy exactOptionalPropertyTypes
+    const effect: Omit<StatusEffect, 'value'> & { value?: number } = {
+      name: effectName,
+      duration: data.duration,
+      description: data.description,
+    };
+
+    if (data.baseValue !== undefined) {
+      effect.value = data.baseValue * stacks;
+    }
+    return effect as StatusEffect;
   }
 
   public getStacks(effectName: string): number {
@@ -103,10 +131,10 @@ export class EntityStatusEffectsManager {
   public getEffectsByCategory(category: 'buff' | 'debuff'): ReadonlyArray<StatusEffect> {
     const effects: StatusEffect[] = [];
 
-    for (const [effectName, effect] of this._effects.entries()) {
+    for (const effectName of this._effects.keys()) {
       const config = EFFECT_CONFIGS[effectName as StatusEffectName];
-      if (config && config.category === category) {
-        effects.push(effect);
+      if (config?.category === category) {
+        effects.push(this.getEffect(effectName)!);
       }
     }
 
@@ -125,28 +153,31 @@ export class EntityStatusEffectsManager {
       return { success: false, reason: `Unknown status effect: ${effectName}` };
     }
 
-    const existingEffect = this._effects.get(effectName);
+    const existingEffectData = this._effects.get(effectName);
 
-    if (config.stackable && existingEffect) {
-      return this.addStack(effectName, duration, value, config);
+    if (config.stackable && existingEffectData) {
+      return this.addStack(effectName, duration, config);
     }
 
-    if (!config.stackable && existingEffect) {
-      if (duration > existingEffect.duration || (value && value > (existingEffect.value || 0))) {
+    if (!config.stackable && existingEffectData) {
+      const currentEffect = this.getEffect(effectName)!;
+      if (duration > currentEffect.duration || (value && value > (currentEffect.value || 0))) {
         this.removeEffect(effectName);
       } else {
         return { success: false, reason: `${effectName} already active with better effect` };
       }
     }
 
-    const newEffect: StatusEffect = {
-      name: effectName,
+    const newEffectData: InternalEffectData = {
       duration,
-      value,
       description: EFFECT_DESCRIPTIONS[effectName],
     };
 
-    this._effects.set(effectName, newEffect);
+    if (value !== undefined) {
+      newEffectData.baseValue = value;
+    }
+
+    this._effects.set(effectName, newEffectData);
     this._stacks.set(effectName, 1);
 
     return { success: true, stacks: 1 };
@@ -172,7 +203,7 @@ export class EntityStatusEffectsManager {
 
     for (const [effectName] of this._effects.entries()) {
       const config = EFFECT_CONFIGS[effectName as StatusEffectName];
-      if (config && config.category === category) {
+      if (config?.category === category) {
         this.removeEffect(effectName);
         clearedEffects.push(effectName);
       }
@@ -187,19 +218,19 @@ export class EntityStatusEffectsManager {
     const expired: string[] = [];
     const effects: Array<{ type: string; value: number }> = [];
 
-    for (const [effectName, effect] of this._effects.entries()) {
-      const effectResult = this.processEffect(effectName, effect);
+    for (const [effectName, effectData] of this._effects.entries()) {
+      const effectResult = this.processEffect(effectName, effectData);
       if (effectResult) {
         effects.push(effectResult);
       }
 
-      const newDuration = effect.duration - 1;
+      const newDuration = effectData.duration - 1;
       if (newDuration <= 0) {
         this._effects.delete(effectName);
         this._stacks.delete(effectName);
         expired.push(effectName);
       } else {
-        this._effects.set(effectName, { ...effect, duration: newDuration });
+        effectData.duration = newDuration;
       }
     }
 
@@ -275,7 +306,6 @@ export class EntityStatusEffectsManager {
   private addStack(
     effectName: string,
     duration: number,
-    value: number | undefined,
     config: StatusEffectConfig
   ): { success: boolean; reason?: string; stacks?: number } {
     const currentStacks = this._stacks.get(effectName) || 0;
@@ -285,75 +315,36 @@ export class EntityStatusEffectsManager {
       return { success: false, reason: `${effectName} already at maximum stacks (${maxStacks})` };
     }
 
-    const existingEffect = this._effects.get(effectName)!;
+    const existingEffectData = this._effects.get(effectName)!;
     const newStacks = currentStacks + 1;
 
-    // TODO: CRITICAL - Redesign stacking system
-    // Current implementation has exponential growth bug and unclear design decisions:
-    //
-    // ISSUES:
-    // 1. calculateStackedValue uses currentValue (already accumulated) instead of baseValue
-    // 2. No clear rules for handling different values in stacks
-    // 3. Duration handling is unclear (max vs refresh vs individual timers)
-    // 4. No consideration for different sources (multiple monsters applying poison)
-    //
-    // DESIGN DECISIONS NEEDED:
-    // - Should stacks be individual effects with separate timers?
-    // - How should different damage values combine?
-    // - Should there be per-source limits vs total limits?
-    // - Should stacks refresh duration or maintain individual timers?
-    //
-    // PROPOSED SOLUTIONS:
-    // A) Individual Effect Tracking: Map<effectName, EffectInstance[]>
-    // B) Aggregate with Stack History: { totalValue, stacks: StackInstance[] }
-    // C) Source-Based Stacking: Map<effectName, Map<sourceId, EffectInstance>>
+    // Refresh duration to the greater of the existing or new duration
+    existingEffectData.duration = Math.max(existingEffectData.duration, duration);
 
-    const updatedEffect: StatusEffect = {
-      ...existingEffect,
-      duration: Math.max(existingEffect.duration, duration),
-      value: this.calculateStackedValue(existingEffect.value, value, newStacks),
-    };
-
-    this._effects.set(effectName, updatedEffect);
     this._stacks.set(effectName, newStacks);
 
     return { success: true, stacks: newStacks };
   }
 
-  private calculateStackedValue(
-    currentValue: number | undefined,
-    newValue: number | undefined,
-    stacks: number
-  ): number | undefined {
-    if (!currentValue && !newValue) {
-      return undefined;
-    }
-
-    // TODO: BROKEN - This causes exponential growth!
-    // currentValue is already the accumulated value from previous stacks
-    // Should store and use baseValue instead
-    //
-    // Current: accumulated_value * new_stack_count = exponential growth
-    // Should: base_value * total_stack_count = linear growth
-    const base = currentValue || newValue || 0;
-    return base * stacks;
-  }
-
   private processEffect(
     effectName: string,
-    effect: StatusEffect
+    effectData: InternalEffectData
   ): { type: string; value: number } | null {
+    const stacks = this._stacks.get(effectName) || 1;
+    const totalValue =
+      effectData.baseValue !== undefined ? effectData.baseValue * stacks : undefined;
+
     switch (effectName) {
       case 'poison':
       case 'burning':
-        if (effect.value) {
-          return { type: `${effectName}_damage`, value: effect.value };
+        if (totalValue) {
+          return { type: `${effectName}_damage`, value: totalValue };
         }
         break;
 
       case 'regeneration':
-        if (effect.value) {
-          return { type: 'regeneration_heal', value: effect.value };
+        if (totalValue) {
+          return { type: 'regeneration_heal', value: totalValue };
         }
         break;
 

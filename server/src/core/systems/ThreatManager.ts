@@ -6,11 +6,11 @@
  */
 
 import type {
+  CombatEntity,
+  TargetingResult,
   ThreatConfig,
   ThreatEntry,
   ThreatUpdate,
-  CombatEntity,
-  TargetingResult,
 } from '@/core/types/entityTypes.js';
 
 // === CONSTANTS ===
@@ -207,16 +207,28 @@ export class ThreatManager {
     let confidence: number;
 
     if (highestThreatTargets.length === 1) {
-      selectedTarget = highestThreatTargets[0].target;
+      const firstTarget = highestThreatTargets[0];
+      if (!firstTarget) {
+        return this.handleNoThreatFallback(targetPool);
+      }
+      selectedTarget = firstTarget.target;
       confidence = 0.9;
     } else if (this._config.enableTiebreaker) {
       // Random selection among tied players
       const randomIndex = Math.floor(Math.random() * highestThreatTargets.length);
-      selectedTarget = highestThreatTargets[randomIndex].target;
+      const randomTarget = highestThreatTargets[randomIndex];
+      if (!randomTarget) {
+        return this.handleNoThreatFallback(targetPool);
+      }
+      selectedTarget = randomTarget.target;
       confidence = 0.7;
     } else {
       // Deterministic selection (first in list)
-      selectedTarget = highestThreatTargets[0].target;
+      const firstTarget = highestThreatTargets[0];
+      if (!firstTarget) {
+        return this.handleNoThreatFallback(targetPool);
+      }
+      selectedTarget = firstTarget.target;
       confidence = 0.8;
     }
 
@@ -327,6 +339,14 @@ export class ThreatManager {
   private handleNoThreatFallback(targetPool: ReadonlyArray<CombatEntity>): TargetingResult {
     if (this._config.fallbackToLowestHp) {
       // Find target with lowest HP percentage
+      if (targetPool.length === 0) {
+        return {
+          target: null,
+          reason: 'No targets available for fallback',
+          confidence: 0.0,
+        };
+      }
+
       const lowestHpTarget = targetPool.reduce((lowest, current) => {
         const currentHpPercent = current.currentHp / current.maxHp;
         const lowestHpPercent = lowest.currentHp / lowest.maxHp;
@@ -343,13 +363,29 @@ export class ThreatManager {
     }
 
     // Random selection fallback
+    if (targetPool.length === 0) {
+      return {
+        target: null,
+        reason: 'No targets available for random selection',
+        confidence: 0.0,
+      };
+    }
+
     const randomIndex = Math.floor(Math.random() * targetPool.length);
     const randomTarget = targetPool[randomIndex];
+
+    if (!randomTarget) {
+      return {
+        target: null,
+        reason: 'Failed to select random target',
+        confidence: 0.0,
+      };
+    }
 
     this.trackTarget(randomTarget.id);
 
     return {
-      target: randomTarget || null,
+      target: randomTarget,
       reason: 'No threat found, random target selection',
       confidence: 0.3,
     };
@@ -368,7 +404,8 @@ export class ThreatManager {
 
     // Remove dead entities from last targets
     for (let i = this._lastTargets.length - 1; i >= 0; i--) {
-      if (!availableIds.has(this._lastTargets[i])) {
+      const targetId = this._lastTargets[i];
+      if (targetId && !availableIds.has(targetId)) {
         this._lastTargets.splice(i, 1);
       }
     }

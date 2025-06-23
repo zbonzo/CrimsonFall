@@ -33,7 +33,6 @@ const HEX_DIRECTIONS: readonly HexDirection[] = [
   { q: 0, r: -1, s: 1 }, // Northwest
 ] as const;
 
-const ORIGIN_HEX: HexCoordinate = { q: 0, r: 0, s: 0 } as const;
 const MAX_PATHFINDING_DISTANCE = 50;
 
 // === CORE HEX MATH FUNCTIONS ===
@@ -109,7 +108,7 @@ export function findHexPath(
     return null; // Too far for pathfinding
   }
 
-  const hexToString = (hex: HexCoordinate): string => `${hex.q},${hex.r}`;
+  const hexToString = (hex: HexCoordinate): string => `${hex.q},${hex.r},${hex.s}`;
 
   // If the goal itself is an obstacle, no path is possible
   if (obstacles.has(hexToString(goal))) {
@@ -145,8 +144,8 @@ export function findHexPath(
 
     if (!current) break;
 
-    const [qStr, rStr] = current.split(',');
-    const currentHex = createHexCoordinate(parseInt(qStr, 10), parseInt(rStr, 10));
+    const [qStr, rStr, sStr] = current.split(',');
+    const currentHex = createHexCoordinate(parseInt(qStr || '0', 10), parseInt(rStr || '0', 10));
 
     // Check if we reached the goal
     if (calculateHexDistance(currentHex, goal) === 0) {
@@ -241,16 +240,26 @@ export function getHexRing(center: HexCoordinate, radius: number): HexCoordinate
     return [center];
   }
 
-  const ring = [];
+  const ring: HexCoordinate[] = [];
+
+  // Start from the west direction (index 4)
+  const westDirection = HEX_DIRECTIONS[4];
+  if (!westDirection) {
+    throw new Error('HEX_DIRECTIONS missing west direction');
+  }
+
   let currentHex = createHexCoordinate(
-    center.q + HEX_DIRECTIONS[4].q * radius,
-    center.r + HEX_DIRECTIONS[4].r * radius
+    center.q + westDirection.q * radius,
+    center.r + westDirection.r * radius
   );
 
   for (let direction = 0; direction < 6; direction++) {
     for (let step = 0; step < radius; step++) {
       ring.push(currentHex);
       const dir = HEX_DIRECTIONS[direction];
+      if (!dir) {
+        throw new Error(`HEX_DIRECTIONS missing direction ${direction}`);
+      }
       currentHex = createHexCoordinate(currentHex.q + dir.q, currentHex.r + dir.r);
     }
   }
@@ -282,14 +291,17 @@ export function hasLineOfSight(
     return true;
   }
 
-  const hexToString = (hex: HexCoordinate) => `${hex.q},${hex.r}`;
+  const hexToString = (hex: HexCoordinate): string => `${hex.q},${hex.r},${hex.s}`;
 
   // Get all hexes in a straight line between from and to
   const lineHexes = getHexLine(from, to);
 
   // Check if any hex in the line (except start and end) is blocked
   for (let i = 1; i < lineHexes.length - 1; i++) {
-    if (obstacles.has(hexToString(lineHexes[i]))) {
+    const currentHex = lineHexes[i];
+    if (!currentHex) continue;
+
+    if (obstacles.has(hexToString(currentHex))) {
       return false;
     }
   }
@@ -302,7 +314,7 @@ export function hasLineOfSight(
  */
 export function getHexLine(from: HexCoordinate, to: HexCoordinate): HexCoordinate[] {
   const distance = calculateHexDistance(from, to);
-  const line = [];
+  const line: HexCoordinate[] = [];
 
   for (let i = 0; i <= distance; i++) {
     const t = distance === 0 ? 0 : i / distance;

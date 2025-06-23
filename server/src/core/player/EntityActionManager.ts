@@ -11,7 +11,7 @@ import type {
   ActionSubmissionResult,
   PlayerAction,
   PlayerActionVariant,
-} from '@/core/types/playerTypes.js';
+} from '@/core/types/entityTypes.js';
 import type { HexCoordinate } from '@/utils/hex/index.js';
 
 // === ACTION MANAGER ===
@@ -65,17 +65,32 @@ export class EntityActionManager {
       return validation;
     }
 
-    const action: PlayerAction = {
-      variant: actionVariant,
-      targetId: params.targetId,
-      targetPosition: params.targetPosition,
-      abilityId: params.abilityId,
-      submissionTime: Date.now(),
-    };
+    let action: PlayerAction;
+    const submissionTime = Date.now();
+
+    switch (actionVariant) {
+      case 'move':
+        action = { variant: 'move', targetPosition: params.targetPosition!, submissionTime };
+        break;
+      case 'attack':
+        action = { variant: 'attack', targetId: params.targetId!, submissionTime };
+        break;
+      case 'ability':
+        action = {
+          variant: 'ability',
+          abilityId: params.abilityId!,
+          targetId: params.targetId, // targetId can be optional for some abilities
+          submissionTime,
+        };
+        break;
+      case 'wait':
+        action = { variant: 'wait', submissionTime };
+        break;
+    }
 
     this._submittedAction = action;
     this._hasSubmittedAction = true;
-    this._actionSubmissionTime = Date.now();
+    this._actionSubmissionTime = submissionTime;
     this._actionHistory.push(action);
 
     return { success: true, action };
@@ -87,38 +102,6 @@ export class EntityActionManager {
     this._actionSubmissionTime = null;
   }
 
-  public updateAction(
-    updates: Partial<{
-      targetId: string;
-      targetPosition: HexCoordinate;
-      abilityId: string;
-    }>
-  ): ActionSubmissionResult {
-    if (!this._submittedAction) {
-      return { success: false, reason: 'No action to update' };
-    }
-
-    const candidateAction: PlayerAction = {
-      ...this._submittedAction,
-      ...updates,
-      submissionTime: Date.now(),
-    };
-
-    const validation = this.validateActionParameters(candidateAction.variant, {
-      targetId: candidateAction.targetId,
-      targetPosition: candidateAction.targetPosition,
-      abilityId: candidateAction.abilityId,
-    });
-
-    if (!validation.success) {
-      return validation;
-    }
-
-    this._submittedAction = candidateAction;
-    this._actionSubmissionTime = Date.now();
-
-    return { success: true, action: candidateAction };
-  }
   // === VALIDATION ===
 
   public validateAction(gameStateValidator: ActionGameStateValidator): {
