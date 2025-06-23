@@ -106,7 +106,7 @@ export class EntityMovementManager {
   ): MovementResult {
     const moveCheck = this.canMove();
     if (!moveCheck.allowed) {
-      return { success: false, reason: moveCheck.reason };
+      return { success: false, reason: moveCheck.reason ?? "Movement not allowed" };
     }
 
     if (!this.isPositionReachable(targetPosition)) {
@@ -119,7 +119,7 @@ export class EntityMovementManager {
 
     const validityCheck = this.isPositionValid(targetPosition, occupiedPositions, obstacles);
     if (!validityCheck.valid) {
-      return { success: false, reason: validityCheck.reason };
+      return { success: false, reason: validityCheck.reason ?? "Position invalid" };
     }
 
     this._currentPosition = targetPosition;

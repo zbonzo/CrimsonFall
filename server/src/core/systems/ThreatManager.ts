@@ -349,7 +349,7 @@ export class ThreatManager {
     this.trackTarget(randomTarget.id);
 
     return {
-      target: randomTarget,
+      target: randomTarget || null,
       reason: 'No threat found, random target selection',
       confidence: 0.3,
     };

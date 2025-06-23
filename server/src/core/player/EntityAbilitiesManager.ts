@@ -173,7 +173,7 @@ export class EntityAbilitiesManager {
   public useAbility(abilityId: string): { success: boolean; reason?: string } {
     const usageCheck = this.canUseAbility(abilityId);
     if (!usageCheck.canUse) {
-      return { success: false, reason: usageCheck.reason };
+      return { success: false, reason: usageCheck.reason || 'Unknown validation error' };
     }
 
     const ability = this.getAbility(abilityId)!;
@@ -270,15 +270,11 @@ export class EntityAbilitiesManager {
   }
 
   // TODO: Add method for alternative reset strategies when decision is made
-  private resetCooldownsFullPersist(): void {
-    // Alternative: Don't reset any cooldowns
-    // Only clear temporary state
-  }
+  // Alternative: Don't reset any cooldowns
+  // Only clear temporary state
 
-  private resetCooldownsHybrid(): void {
-    // Alternative: Category-based reset rules
-    // Requires ability categorization system
-  }
+  // Alternative: Category-based reset rules
+  // Requires ability categorization system
 
   // === UTILITY ===
 

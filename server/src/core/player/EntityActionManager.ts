@@ -187,7 +187,11 @@ export class EntityActionManager {
 
   private validateActionParameters(
     actionVariant: PlayerActionVariant,
-    params: { targetId?: string; targetPosition?: HexCoordinate; abilityId?: string }
+    params: {
+      targetId?: string | undefined;
+      targetPosition?: HexCoordinate | undefined;
+      abilityId?: string | undefined;
+    }
   ): ActionSubmissionResult {
     switch (actionVariant) {
       case 'move':

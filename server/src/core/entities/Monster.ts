@@ -3,6 +3,7 @@
  * Fixed import paths, integrated shared managers, simplified AI integration
  *
  * FIXED: Removed reserved keywords 'type' → 'variant', 'class' → 'specialization'
+ * FIXED: Corrected import paths and manager aliases
  *
  * @file server/src/core/entities/Monster.ts
  */
@@ -25,24 +26,16 @@ import type {
   TargetingContext,
   ThreatUpdate,
 } from '@/core/types/entityTypes';
-import type { HexCoordinate } from '@/utils/hex/index.js';
+import { ORIGIN_HEX, type HexCoordinate } from '@/utils/hex/index.js';
 
 import { MonsterAI } from '@/core/ai/MonsterAI';
-import { EntityStatsManager } from '@/core/entities/EntityStatsManager';
-import { PlayerAbilitiesManager as EntityAbilitiesManager } from '@/core/player/EntityAbilitiesManager';
-import { PlayerMovementManager as EntityMovementManager } from '@/core/player/EntityMovementManager';
-import { PlayerStatusEffectsManager as EntityStatusEffectsManager } from '@/core/player/EntityStatusEffectsManager';
+// FIXED: Corrected import paths - these managers are shared across entities
+import { EntityAbilitiesManager } from '@/core/player/EntityAbilitiesManager';
+import { EntityMovementManager } from '@/core/player/EntityMovementManager';
+import { EntityStatsManager } from '@/core/player/EntityStatsManager';
+import { EntityStatusEffectsManager } from '@/core/player/EntityStatusEffectsManager';
 import { ThreatCalculator, ThreatManager } from '@/core/systems/ThreatManager';
 
-// === CONSTANTS ===
-
-const DEFAULT_POSITION: HexCoordinate = { q: 0, r: 0, s: 0 } as const;
-
-// === MONSTER ENTITY ===
-
-/**
- * Monster entity with AI behavior, threat management, and combat abilities
- */
 export class Monster implements CombatEntity, MovableEntity, AbilityUser, StatusEffectTarget {
   public readonly id: string;
   public readonly name: string;
@@ -65,7 +58,7 @@ export class Monster implements CombatEntity, MovableEntity, AbilityUser, Status
   constructor(
     id: string,
     definition: MonsterDefinition,
-    startingPosition: HexCoordinate = DEFAULT_POSITION
+    startingPosition: HexCoordinate = ORIGIN_HEX
   ) {
     if (!id?.trim()) throw new Error('Monster ID cannot be empty');
     if (!definition) throw new Error('Monster definition is required');

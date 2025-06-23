@@ -47,6 +47,9 @@ tests/coverage/
 .tmp/
 temp/
 
+# Personal Backups
+*backup*
+
 # Windows specific
 ehthumbs.db
 Desktop.ini

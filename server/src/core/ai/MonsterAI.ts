@@ -524,7 +524,7 @@ export class MonsterAI {
         return self;
 
       default:
-        return context.enemies.length > 0 ? context.enemies[0] : undefined;
+        return context.enemies.length > 0 ? context.enemies[0] : null; // Default to first enemy
     }
   }
 
