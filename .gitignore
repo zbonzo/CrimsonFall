@@ -10,6 +10,9 @@ build/
 client/dist/
 server/dist/
 
+# TypeScript cache
+*.tsbuildinfo
+
 # Environment files
 .env
 .env.local

@@ -5,7 +5,7 @@
  * @file server/src/config/monsters/index.ts
  */
 
-import type { MonsterDefinition } from '@/core/types/entityTypes';
+import type { MonsterDefinition } from '@/core/types/entityTypes.js';
 
 export interface MonsterConfigData {
   id: string;

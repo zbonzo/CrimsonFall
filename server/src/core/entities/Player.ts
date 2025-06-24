@@ -17,8 +17,6 @@ import type {
   MovableEntity,
   MovementResult,
   PlayerAction,
-  PlayerPrivateData,
-  PlayerPublicData,
   PlayerSpecialization,
   StatusEffectResult,
   StatusEffectTarget,
@@ -303,42 +301,6 @@ export class Player implements CombatEntity, MovableEntity, AbilityUser, StatusE
     this._abilities.resetForEncounter();
     this._statusEffects.resetForEncounter();
     this._stats.resetToStartingStats();
-  }
-
-  // === DATA EXPORT ===
-
-  public toPublicData(): PlayerPublicData {
-    return {
-      id: this.id,
-      name: this.name,
-      specializationName: this.specialization.name,
-      level: this.level,
-      currentHp: this.currentHp,
-      maxHp: this.maxHp,
-      armor: this.effectiveArmor,
-      position: this.position,
-      isAlive: this.isAlive,
-      hasSubmittedAction: this.hasSubmittedAction,
-      statusEffects: this.activeStatusEffects,
-      hasMovedThisRound: this.hasMovedThisRound,
-      availableAbilities: this.getAvailableAbilities(),
-      variant: 'player',
-    };
-  }
-
-  public toPrivateData(): PlayerPrivateData {
-    const publicData = this.toPublicData();
-
-    return {
-      ...publicData,
-      experience: this._stats.level.experience,
-      damageModifier: this._stats.damageModifier,
-      submittedAction: this._actions.submittedAction,
-      actionSubmissionTime: this._actions.actionSubmissionTime,
-      abilities: this._abilities.abilities,
-      availableAbilities: this._abilities.availableAbilities,
-      abilityCooldowns: this._abilities.cooldowns,
-    };
   }
 
   // === UTILITY ===

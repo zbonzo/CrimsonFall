@@ -223,7 +223,7 @@ export class EntityMovementManager {
   }
 
   public stringToPosition(positionString: string): HexCoordinate {
-    const [qStr, rStr, sStr] = positionString.split(',');
+    const [qStr, rStr] = positionString.split(',');
     const q = parseInt(qStr || '0', 10);
     const r = parseInt(rStr || '0', 10);
     return createHexCoordinate(q, r);

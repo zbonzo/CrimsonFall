@@ -104,7 +104,7 @@ export class EntityStatsManager {
 
   // === HEALTH MANAGEMENT ===
 
-  public takeDamage(amount: number, source: string = 'unknown'): DamageResult {
+  public takeDamage(amount: number, _source: string = 'unknown'): DamageResult {
     if (!this.isAlive) {
       return { damageDealt: 0, blocked: 0, died: false };
     }

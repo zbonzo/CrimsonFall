@@ -64,7 +64,7 @@ export function findHexPath(
 
     if (!current) break;
 
-    const [qStr, rStr, sStr] = current.split(',');
+    const [qStr, rStr] = current.split(',');
     const currentHex = createHexCoordinate(parseInt(qStr || '0', 10), parseInt(rStr || '0', 10));
 
     // Check if we reached the goal

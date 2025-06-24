@@ -1,6 +1,8 @@
 /**
  * @fileoverview Threat management system for monsters
  * Tracks threat values and manages target selection based on player actions
+ * Calculation utilities extracted to ThreatCalculator.ts
+ * Target selection logic extracted to ThreatTargetingSystem.ts
  *
  * @file server/src/core/systems/ThreatManager.ts
  */
@@ -12,6 +14,7 @@ import type {
   ThreatEntry,
   ThreatUpdate,
 } from '@/core/types/entityTypes.js';
+import { ThreatTargetingSystem } from './ThreatTargetingSystem.js';
 
 // === CONSTANTS ===
 
@@ -39,10 +42,12 @@ export class ThreatManager {
   private readonly _threatTable: Map<string, number> = new Map();
   private readonly _lastTargets: string[] = [];
   private readonly _threatHistory: Map<string, ThreatUpdate[]> = new Map();
+  private readonly _targetingSystem: ThreatTargetingSystem;
   private _roundsActive: number = 0;
 
   constructor(config: Partial<ThreatConfig> = {}) {
     this._config = { ...DEFAULT_THREAT_CONFIG, ...config };
+    this._targetingSystem = new ThreatTargetingSystem(this._config);
   }
 
   // === GETTERS ===
@@ -161,85 +166,19 @@ export class ThreatManager {
     return this._lastTargets.includes(entityId);
   }
 
-  // === TARGET SELECTION ===
+  // === TARGET SELECTION (Delegated) ===
 
   public selectTarget(availableTargets: ReadonlyArray<CombatEntity>): TargetingResult {
-    if (!this._config.enabled || availableTargets.length === 0) {
-      return {
-        target: null,
-        reason: 'No threat system or no available targets',
-        confidence: 0.0,
-      };
-    }
-
-    // Clean up dead entities
+    // Clean up dead entities first
     this.cleanupDeadEntities(availableTargets);
 
-    // Filter targets that weren't recently targeted
-    const nonRecentTargets = availableTargets.filter(
-      target => !this.wasRecentlyTargeted(target.id)
+    // Delegate to targeting system
+    return this._targetingSystem.selectTarget(
+      availableTargets,
+      (entityId: string) => this.getThreat(entityId),
+      (entityId: string) => this.wasRecentlyTargeted(entityId),
+      (entityId: string) => this.trackTarget(entityId)
     );
-
-    // Use all targets if everyone was recently targeted
-    const targetPool = nonRecentTargets.length > 0 ? nonRecentTargets : availableTargets;
-
-    // Get targets with threat
-    const targetsWithThreat = targetPool
-      .map(target => ({
-        target,
-        threat: this.getThreat(target.id),
-      }))
-      .filter(entry => entry.threat > MINIMUM_THREAT_THRESHOLD);
-
-    // If no one has significant threat, use fallback
-    if (targetsWithThreat.length === 0) {
-      return this.handleNoThreatFallback(targetPool);
-    }
-
-    // Find highest threat target(s)
-    const maxThreat = Math.max(...targetsWithThreat.map(entry => entry.threat));
-    const highestThreatTargets = targetsWithThreat.filter(
-      entry => Math.abs(entry.threat - maxThreat) < 0.01 // Handle floating point comparison
-    );
-
-    // Handle tie-breaking
-    let selectedTarget: CombatEntity;
-    let confidence: number;
-
-    if (highestThreatTargets.length === 1) {
-      const firstTarget = highestThreatTargets[0];
-      if (!firstTarget) {
-        return this.handleNoThreatFallback(targetPool);
-      }
-      selectedTarget = firstTarget.target;
-      confidence = 0.9;
-    } else if (this._config.enableTiebreaker) {
-      // Random selection among tied players
-      const randomIndex = Math.floor(Math.random() * highestThreatTargets.length);
-      const randomTarget = highestThreatTargets[randomIndex];
-      if (!randomTarget) {
-        return this.handleNoThreatFallback(targetPool);
-      }
-      selectedTarget = randomTarget.target;
-      confidence = 0.7;
-    } else {
-      // Deterministic selection (first in list)
-      const firstTarget = highestThreatTargets[0];
-      if (!firstTarget) {
-        return this.handleNoThreatFallback(targetPool);
-      }
-      selectedTarget = firstTarget.target;
-      confidence = 0.8;
-    }
-
-    // Track this selection
-    this.trackTarget(selectedTarget.id);
-
-    return {
-      target: selectedTarget,
-      reason: `Selected target with highest threat: ${maxThreat.toFixed(1)}`,
-      confidence,
-    };
   }
 
   // === ROUND PROCESSING ===
@@ -336,61 +275,6 @@ export class ThreatManager {
 
   // === PRIVATE HELPERS ===
 
-  private handleNoThreatFallback(targetPool: ReadonlyArray<CombatEntity>): TargetingResult {
-    if (this._config.fallbackToLowestHp) {
-      // Find target with lowest HP percentage
-      if (targetPool.length === 0) {
-        return {
-          target: null,
-          reason: 'No targets available for fallback',
-          confidence: 0.0,
-        };
-      }
-
-      const lowestHpTarget = targetPool.reduce((lowest, current) => {
-        const currentHpPercent = current.currentHp / current.maxHp;
-        const lowestHpPercent = lowest.currentHp / lowest.maxHp;
-        return currentHpPercent < lowestHpPercent ? current : lowest;
-      });
-
-      this.trackTarget(lowestHpTarget.id);
-
-      return {
-        target: lowestHpTarget,
-        reason: 'No threat found, targeting lowest HP player',
-        confidence: 0.5,
-      };
-    }
-
-    // Random selection fallback
-    if (targetPool.length === 0) {
-      return {
-        target: null,
-        reason: 'No targets available for random selection',
-        confidence: 0.0,
-      };
-    }
-
-    const randomIndex = Math.floor(Math.random() * targetPool.length);
-    const randomTarget = targetPool[randomIndex];
-
-    if (!randomTarget) {
-      return {
-        target: null,
-        reason: 'Failed to select random target',
-        confidence: 0.0,
-      };
-    }
-
-    this.trackTarget(randomTarget.id);
-
-    return {
-      target: randomTarget,
-      reason: 'No threat found, random target selection',
-      confidence: 0.3,
-    };
-  }
-
   private cleanupDeadEntities(availableTargets: ReadonlyArray<CombatEntity>): void {
     const availableIds = new Set(availableTargets.map(target => target.id));
 
@@ -409,88 +293,5 @@ export class ThreatManager {
         this._lastTargets.splice(i, 1);
       }
     }
-  }
-}
-
-// === THREAT CALCULATOR UTILITY ===
-
-/**
- * Utility class for calculating threat values from combat actions
- */
-export class ThreatCalculator {
-  public static createThreatUpdate(
-    playerId: string,
-    damageToMonster: number = 0,
-    totalDamageDealt: number = 0,
-    healingDone: number = 0,
-    playerArmor: number = 0,
-    source: string = 'unknown'
-  ): ThreatUpdate {
-    return {
-      playerId,
-      damageToSelf: damageToMonster,
-      totalDamageDealt,
-      healingDone,
-      playerArmor,
-      source,
-    };
-  }
-
-  public static calculateRawThreat(update: ThreatUpdate, config: ThreatConfig): number {
-    const { armorMultiplier, damageMultiplier, healingMultiplier } = config;
-
-    const armorThreat = update.playerArmor * update.damageToSelf * armorMultiplier;
-    const damageThreat = update.totalDamageDealt * damageMultiplier;
-    const healThreat = update.healingDone * healingMultiplier;
-
-    return armorThreat + damageThreat + healThreat;
-  }
-
-  public static createAttackThreat(
-    playerId: string,
-    damageDealt: number,
-    playerArmor: number
-  ): ThreatUpdate {
-    return this.createThreatUpdate(
-      playerId,
-      damageDealt, // Damage to this monster
-      damageDealt, // Total damage (same for single target)
-      0, // No healing
-      playerArmor,
-      'attack'
-    );
-  }
-
-  public static createHealingThreat(
-    playerId: string,
-    healingAmount: number,
-    playerArmor: number
-  ): ThreatUpdate {
-    return this.createThreatUpdate(
-      playerId,
-      0, // No damage to monster
-      0, // No damage dealt
-      healingAmount,
-      playerArmor,
-      'healing'
-    );
-  }
-
-  public static createAbilityThreat(
-    playerId: string,
-    damageToMonster: number,
-    totalDamage: number,
-    healingDone: number,
-    playerArmor: number,
-    abilityName: string
-  ): ThreatUpdate {
-    return this.createThreatUpdate(
-      playerId,
-      damageToMonster,
-      totalDamage,
-      healingDone,
-      playerArmor,
-      `ability:${abilityName}`
-    );
   }
 }
