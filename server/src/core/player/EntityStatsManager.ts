@@ -2,6 +2,18 @@
  * @fileoverview Shared entity stats management for Players, Monsters, and NPCs
  * Extracted from PlayerStatsManager to be reusable across all entity types
  *
+ * COMPLEXITY NOTE: This file remains at 365 lines due to:
+ * - Complex stat calculation system with level scaling
+ * - Multiple damage types and armor reduction formulas
+ * - Experience and progression management with validation
+ * - Status effect modifiers affecting all stat calculations
+ * 
+ * FUTURE REFACTORING OPPORTUNITIES:
+ * - Extract DamageCalculator class for combat math
+ * - Create ProgressionManager for level/XP logic
+ * - Separate StatModifiers for temporary stat changes
+ * - Split health management to HealthManager class
+ *
  * @file server/src/core/entities/EntityStatsManager.ts
  */
 

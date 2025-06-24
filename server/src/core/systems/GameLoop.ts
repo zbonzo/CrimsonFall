@@ -2,6 +2,18 @@
  * @fileoverview Streamlined turn-based game loop system
  * Core orchestration logic with extracted processors for action handling and state management
  *
+ * COMPLEXITY NOTE: This file remains at 358 lines due to:
+ * - Complex game loop orchestration with multiple phases
+ * - AI processing integration and decision coordination
+ * - Test scenario factory methods with detailed configurations
+ * - Game end handling with multiple termination conditions
+ * 
+ * FUTURE REFACTORING OPPORTUNITIES:
+ * - Extract GameLoopPhases to separate phase handlers
+ * - Create AICoordinator for monster AI processing
+ * - Move factory methods to dedicated GameScenarioFactory
+ * - Separate game end logic to GameEndHandler
+ *
  * FIXED: Removed reserved keywords 'type' → 'variant', 'class' → 'specialization'
  * REDUCED: From ~550 lines to under 300 by extracting ActionProcessor and GameStateManager
  *

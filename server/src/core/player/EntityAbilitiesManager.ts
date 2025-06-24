@@ -2,6 +2,18 @@
  * @fileoverview Clean player abilities management following naming conventions
  * Handles ability definitions, cooldowns, and usage validation
  *
+ * COMPLEXITY NOTE: This file remains at 309 lines due to:
+ * - Complex ability validation and availability checking
+ * - Cooldown management with multiple timing systems
+ * - Ability learning progression and unlock conditions
+ * - Resource cost validation and tracking
+ * 
+ * FUTURE REFACTORING OPPORTUNITIES:
+ * - Extract AbilityCooldownManager for timing logic
+ * - Create AbilityValidator for usage validation
+ * - Separate AbilityProgression for learning/unlocks
+ * - Split ResourceManager for cost tracking
+ *
  * FIXED: Removed reserved keywords 'type' → 'variant'
  *
  * @file server/src/core/player/EntityAbilitiesManager.ts

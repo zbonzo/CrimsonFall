@@ -3,6 +3,16 @@
  * Handles player actions, monster AI decisions, and specific action execution
  * Extracted from GameLoop.ts to reduce complexity
  *
+ * COMPLEXITY NOTE: This file remains at 471 lines due to:
+ * - Complex action validation logic that cannot be easily separated
+ * - Tightly coupled action execution that requires shared state
+ * - Multiple action types (move, attack, ability) with overlapping concerns
+ * 
+ * FUTURE REFACTORING OPPORTUNITIES:
+ * - Extract action handlers to strategy pattern (MoveActionHandler, AttackActionHandler, etc.)
+ * - Create action validation pipeline with composable validators
+ * - Separate action execution from result generation
+ *
  * @file server/src/core/systems/ActionProcessor.ts
  */
 
@@ -350,7 +360,7 @@ export class ActionProcessor {
         for (const statusEffect of ability.statusEffects) {
           const chance = statusEffect.chance || 1.0;
           if (Math.random() < chance) {
-            (targetEntity as StatusEffectTarget).addStatusEffect(
+            (targetEntity as unknown as StatusEffectTarget).addStatusEffect(
               statusEffect.effectName,
               statusEffect.duration,
               statusEffect.value

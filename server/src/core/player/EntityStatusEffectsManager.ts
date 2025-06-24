@@ -2,6 +2,18 @@
  * @fileoverview Clean status effects management following naming conventions
  * Handles status effect application, processing, and expiration
  *
+ * COMPLEXITY NOTE: This file remains at 357 lines due to:
+ * - Complex status effect stacking and duration management
+ * - Multiple effect types with different application rules
+ * - Stat modifier calculations affecting all entity properties
+ * - Effect interaction validation and conflict resolution
+ * 
+ * FUTURE REFACTORING OPPORTUNITIES:
+ * - Extract StatusEffectTypes to separate effect definitions
+ * - Create EffectStack manager for stacking logic
+ * - Separate StatModifierCalculator for stat changes
+ * - Split effect validation to EffectValidator class
+ *
  * TODO: Move status effect configurations to external config file
  *
  * @file server/src/core/player/PlayerStatusEffectsManager.ts

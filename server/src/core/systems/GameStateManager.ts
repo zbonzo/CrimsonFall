@@ -3,6 +3,18 @@
  * Handles game state transitions, end conditions, and status effect processing
  * Extracted from GameLoop.ts to reduce complexity
  *
+ * COMPLEXITY NOTE: This file remains at 369 lines due to:
+ * - Complex game state validation with multiple entity types
+ * - Status effect processing across all entities
+ * - Game end condition evaluation with multiple scenarios
+ * - State synchronization and consistency checking
+ * 
+ * FUTURE REFACTORING OPPORTUNITIES:
+ * - Extract GameStateValidator class for validation logic
+ * - Create StatusEffectProcessor for cross-entity status processing
+ * - Split win condition checking to GameEndEvaluator
+ * - Separate state updates from state queries
+ *
  * @file server/src/core/systems/GameStateManager.ts
  */
 

@@ -28,10 +28,12 @@ export class ThreatCalculator {
   ): ThreatUpdate {
     return {
       playerId,
+      damageReceived: damageToMonster,
+      healingReceived: healingDone,
+      playerArmor,
       damageToSelf: damageToMonster,
       totalDamageDealt,
       healingDone,
-      playerArmor,
       source,
     };
   }

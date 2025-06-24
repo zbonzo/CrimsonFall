@@ -42,6 +42,9 @@ export class ThreatManager {
   private readonly _threatTable: Map<string, number> = new Map();
   private readonly _lastTargets: string[] = [];
   private readonly _threatHistory: Map<string, ThreatUpdate[]> = new Map();
+  private readonly _lastUpdateRound: Map<string, number> = new Map();
+  private readonly _damageHistory: Map<string, number[]> = new Map();
+  private readonly _healingHistory: Map<string, number[]> = new Map();
   private readonly _targetingSystem: ThreatTargetingSystem;
   private _roundsActive: number = 0;
 
@@ -66,6 +69,10 @@ export class ThreatManager {
       playerName: playerId, // This would be resolved from entity manager
       threat,
       roundsTracked: this._roundsActive,
+      threatValue: threat,
+      lastUpdate: this._lastUpdateRound.get(playerId) || 0,
+      damageHistory: this._damageHistory.get(playerId) || [],
+      healingHistory: this._healingHistory.get(playerId) || [],
     }));
   }
 
@@ -81,6 +88,9 @@ export class ThreatManager {
     if (!this._threatTable.has(entityId)) {
       this._threatTable.set(entityId, 0);
       this._threatHistory.set(entityId, []);
+      this._lastUpdateRound.set(entityId, this._roundsActive);
+      this._damageHistory.set(entityId, []);
+      this._healingHistory.set(entityId, []);
     }
   }
 
@@ -101,6 +111,25 @@ export class ThreatManager {
     if (totalThreat > 0) {
       const currentThreat = this._threatTable.get(update.playerId) || 0;
       this._threatTable.set(update.playerId, currentThreat + totalThreat);
+
+      // Update tracking data
+      this._lastUpdateRound.set(update.playerId, this._roundsActive);
+
+      // Store damage history
+      if (update.damageReceived > 0) {
+        const damageHist = this._damageHistory.get(update.playerId) || [];
+        damageHist.push(update.damageReceived);
+        if (damageHist.length > 10) damageHist.shift();
+        this._damageHistory.set(update.playerId, damageHist);
+      }
+
+      // Store healing history
+      if (update.healingReceived > 0) {
+        const healingHist = this._healingHistory.get(update.playerId) || [];
+        healingHist.push(update.healingReceived);
+        if (healingHist.length > 10) healingHist.shift();
+        this._healingHistory.set(update.playerId, healingHist);
+      }
 
       // Store threat history
       const history = this._threatHistory.get(update.playerId) || [];
