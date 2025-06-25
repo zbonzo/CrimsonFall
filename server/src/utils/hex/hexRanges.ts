@@ -14,6 +14,9 @@ import {
   type MovementRange,
 } from './hexCoordinates.js';
 
+// Re-export for convenience
+export type { MovementRange };
+
 /**
  * Gets all hex coordinates within specified range of origin
  */

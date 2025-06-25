@@ -22,27 +22,26 @@
 import type {
   AbilityDefinition,
   AbilityUser,
-  ActionSubmissionResult,
   CombatEntity,
   DamageResult,
   HealResult,
   MovableEntity,
   MovementResult,
-  PlayerAction,
   PlayerSpecialization,
   StatusEffectResult,
   StatusEffectTarget,
 } from '@/core/types/entityTypes.js';
+import type {
+  ActionSubmissionResult,
+  PlayerAction,
+} from '@/core/types/playerTypes.js';
 import type { HexCoordinate } from '@/utils/hex/hexCoordinates.js';
 
 import { EntityAbilitiesManager } from '@/core/player/EntityAbilitiesManager.js';
 import { EntityActionManager } from '@/core/player/EntityActionManager.js';
 import { EntityMovementManager } from '@/core/player/EntityMovementManager.js';
 import { EntityStatsManager } from '@/core/player/EntityStatsManager.js';
-import {
-  EntityStatusEffectsManager,
-  type StatusEffectName,
-} from '@/core/player/EntityStatusEffectsManager.js';
+import { EntityStatusEffectsManager } from '@/core/player/EntityStatusEffectsManager.js';
 
 // === CONSTANTS ===
 
@@ -155,7 +154,7 @@ export class Player implements CombatEntity, MovableEntity, AbilityUser, StatusE
     return this._stats.takeDamage(modifiedDamage, source);
   }
 
-  public heal(amount: number): HealResult {
+  public heal(amount: number, source?: string): HealResult {
     if (!this.isAlive) {
       return { amountHealed: 0, newHp: this.currentHp };
     }
@@ -165,6 +164,18 @@ export class Player implements CombatEntity, MovableEntity, AbilityUser, StatusE
     const modifiedHealing = Math.floor(amount * healingModifier);
 
     return this._stats.heal(modifiedHealing);
+  }
+
+  public setHp(amount: number): void {
+    this._stats.setCurrentHp(amount);
+  }
+
+  public calculateTotalDamage(baseDamage: number): number {
+    return this._statusEffects.getDamageModifierWithBase(baseDamage);
+  }
+
+  public calculateTotalHealing(baseHealing: number): number {
+    return this._statusEffects.getHealingModifierWithBase(baseHealing);
   }
 
   public calculateDamageOutput(baseDamage?: number): number {
@@ -199,7 +210,7 @@ export class Player implements CombatEntity, MovableEntity, AbilityUser, StatusE
   }
 
   public submitAction(
-    actionVariant: PlayerAction['variant'],
+    actionVariant: PlayerAction['variant'] | PlayerAction,
     params: {
       targetId?: string;
       targetPosition?: HexCoordinate;
@@ -212,6 +223,20 @@ export class Player implements CombatEntity, MovableEntity, AbilityUser, StatusE
     if (!this._statusEffects.canAct()) {
       return { success: false, reason: 'Cannot act due to status effects' };
     }
+    
+    // Handle full action object
+    if (typeof actionVariant === 'object') {
+      const action = actionVariant;
+      const variant = action.variant;
+      const actionParams: any = {};
+      
+      if ('targetId' in action) actionParams.targetId = action.targetId;
+      if ('targetPosition' in action) actionParams.targetPosition = action.targetPosition;
+      if ('abilityId' in action) actionParams.abilityId = action.abilityId;
+      
+      return this._actions.submitAction(variant, actionParams);
+    }
+    
     return this._actions.submitAction(actionVariant, params);
   }
 
@@ -233,6 +258,20 @@ export class Player implements CombatEntity, MovableEntity, AbilityUser, StatusE
     value?: number
   ): { success: boolean; reason?: string; stacks?: number } {
     return this._statusEffects.addEffect(effectName as any, duration, value);
+  }
+
+  public applyStatusEffect(
+    effectName: string,
+    duration: number,
+    value?: number
+  ): { applied: boolean; effectName: string; duration: number; value?: number } {
+    const result = this.addStatusEffect(effectName, duration, value);
+    return {
+      applied: result.success,
+      effectName,
+      duration,
+      value,
+    };
   }
   public hasStatusEffect(effectName: string): boolean {
     return this._statusEffects.hasEffect(effectName);
@@ -262,6 +301,15 @@ export class Player implements CombatEntity, MovableEntity, AbilityUser, StatusE
 
   public getAvailableAbilities(): ReadonlyArray<AbilityDefinition> {
     return this._abilities.availableAbilities;
+  }
+
+  public getPendingActions(): ReadonlyArray<PlayerAction> {
+    const action = this._actions.submittedAction;
+    return action ? [action] : [];
+  }
+
+  public getActiveStatusEffects(): ReadonlyArray<import('@/core/types/statusEffects.js').StatusEffect> {
+    return this._statusEffects.getActiveStatusEffects();
   }
 
   public get activeStatusEffects(): ReadonlyArray<
@@ -321,6 +369,61 @@ export class Player implements CombatEntity, MovableEntity, AbilityUser, StatusE
     this._abilities.resetForEncounter();
     this._statusEffects.resetForEncounter();
     this._stats.resetToStartingStats();
+  }
+
+  // === DATA EXPORT METHODS ===
+
+  public getPublicData(): import('@/core/types/players.js').PlayerPublicData {
+    return {
+      id: this.id,
+      name: this.name,
+      variant: this.variant,
+      specialization: this.specialization,
+      level: this.level,
+      experience: this._stats.level.experience,
+      maxHp: this.maxHp,
+      currentHp: this.currentHp,
+      baseArmor: this.baseArmor,
+      effectiveArmor: this.effectiveArmor,
+      baseDamage: this.baseDamage,
+      position: this.position,
+      isAlive: this.isAlive,
+      movementRange: this.movementRange,
+      abilities: this.getAvailableAbilities(),
+    };
+  }
+
+  public getPrivateData(): import('@/core/types/players.js').PlayerPrivateData {
+    const publicData = this.getPublicData();
+    return {
+      ...publicData,
+      hasSubmittedAction: this.hasSubmittedAction,
+      submittedAction: this.submittedAction || undefined,
+      abilityCooldowns: this._abilities.getCooldownMap(),
+      statusEffects: this.activeStatusEffects,
+    };
+  }
+
+  // === MANAGER ACCESS (For testing) ===
+
+  public get statsManager(): EntityStatsManager {
+    return this._stats;
+  }
+
+  public get abilitiesManager(): EntityAbilitiesManager {
+    return this._abilities;
+  }
+
+  public get movementManager(): EntityMovementManager {
+    return this._movement;
+  }
+
+  public get actionManager(): EntityActionManager {
+    return this._actions;
+  }
+
+  public get statusEffectsManager(): EntityStatusEffectsManager {
+    return this._statusEffects;
   }
 
   // === UTILITY ===

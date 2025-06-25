@@ -28,7 +28,7 @@ export function findHexPath(
     return null; // Too far for pathfinding
   }
 
-  const hexToString = (hex: HexCoordinate): string => `${hex.q},${hex.r},${hex.s}`;
+  const hexToString = (hex: HexCoordinate): string => `${hex.q},${hex.r}`;
 
   // If the goal itself is an obstacle, no path is possible
   if (obstacles.has(hexToString(goal))) {

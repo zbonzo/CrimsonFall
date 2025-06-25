@@ -8,7 +8,9 @@
       "Bash(npm test:*)",
       "Bash(find:*)",
       "Bash(sed:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(ls:*)",
+      "Bash(rg:*)"
     ],
     "deny": []
   }

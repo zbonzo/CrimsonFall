@@ -21,6 +21,7 @@ describe('GameLoop', () => {
   const mockPlayerSpec: PlayerSpecialization = {
     id: 'test_class',
     name: 'Test Class',
+    variant: 'player',
     description: 'Test player class',
     stats: {
       maxHp: 100,
@@ -29,12 +30,14 @@ describe('GameLoop', () => {
       movementRange: 3,
     },
     abilities: [],
+    startingAbilities: [],
   };
 
   const mockMonsterDef: MonsterDefinition = {
     id: 'test_monster',
     name: 'Test Monster',
     variant: 'monster',
+    description: 'Test monster for unit testing',
     stats: {
       maxHp: 80,
       baseArmor: 1,
@@ -63,19 +66,19 @@ describe('GameLoop', () => {
       new Monster('monster2', mockMonsterDef, createHexCoordinate(5, 1)),
     ];
 
-    gameLoop = new GameLoop(mockConfig, mockPlayers, mockMonsters);
+    gameLoop = new GameLoop(mockPlayers, mockMonsters, mockConfig);
   });
 
   describe('initialization', () => {
     it('should initialize with provided config', () => {
-      expect(gameLoop.isRunning()).toBe(false);
-      expect(gameLoop.getCurrentRound()).toBe(0);
-      expect(gameLoop.isGameEnded()).toBe(false);
+      expect(gameLoop.gameState.phase).toBe('setup');
+      expect(gameLoop.currentRound).toBe(0);
+      expect(gameLoop.isGameEnded).toBe(false);
     });
 
     it('should initialize with players and monsters', () => {
-      const players = gameLoop.getPlayers();
-      const monsters = gameLoop.getMonsters();
+      const players = gameLoop.getAlivePlayers();
+      const monsters = gameLoop.getAliveMonsters();
 
       expect(players).toHaveLength(2);
       expect(monsters).toHaveLength(2);
@@ -86,46 +89,46 @@ describe('GameLoop', () => {
     it('should validate initial game state', () => {
       // All entities should be alive and positioned
       mockPlayers.forEach(player => {
-        expect(player.isAlive()).toBe(true);
+        expect(player.isAlive).toBe(true);
         expect(player.position).toBeDefined();
       });
 
       mockMonsters.forEach(monster => {
-        expect(monster.isAlive()).toBe(true);
+        expect(monster.isAlive).toBe(true);
         expect(monster.position).toBeDefined();
       });
     });
 
     it('should handle empty player list', () => {
-      const emptyGameLoop = new GameLoop(mockConfig, [], mockMonsters);
+      const emptyGameLoop = new GameLoop([], mockMonsters, mockConfig);
 
-      expect(emptyGameLoop.isGameEnded()).toBe(true);
-      expect(emptyGameLoop.getWinner()).toBe('monsters');
+      expect(emptyGameLoop.isGameEnded).toBe(true);
+      expect(emptyGameLoop.winner).toBe('monsters');
     });
 
     it('should handle empty monster list', () => {
-      const emptyGameLoop = new GameLoop(mockConfig, mockPlayers, []);
+      const emptyGameLoop = new GameLoop(mockPlayers, [], mockConfig);
 
-      expect(emptyGameLoop.isGameEnded()).toBe(true);
-      expect(emptyGameLoop.getWinner()).toBe('players');
+      expect(emptyGameLoop.isGameEnded).toBe(true);
+      expect(emptyGameLoop.winner).toBe('players');
     });
   });
 
   describe('game loop lifecycle', () => {
     it('should start game loop', () => {
-      gameLoop.start();
+      gameLoop.startGame();
 
-      expect(gameLoop.isRunning()).toBe(true);
-      expect(gameLoop.getCurrentRound()).toBe(1);
+      expect(gameLoop.gameState.phase === 'playing').toBe(true);
+      expect(gameLoop.currentRound).toBe(1);
     });
 
     it('should not start if already running', () => {
-      gameLoop.start();
-      const initialRound = gameLoop.getCurrentRound();
+      gameLoop.startGame();
+      const initialRound = gameLoop.currentRound;
 
-      gameLoop.start(); // Try to start again
+      gameLoop.startGame(); // Try to start again
 
-      expect(gameLoop.getCurrentRound()).toBe(initialRound);
+      expect(gameLoop.currentRound).toBe(initialRound);
     });
 
     it('should not start if game has ended', () => {
@@ -134,41 +137,41 @@ describe('GameLoop', () => {
         player.setHp(0); // Kill all players
       });
 
-      gameLoop.start();
+      gameLoop.startGame();
 
-      expect(gameLoop.isRunning()).toBe(false);
-      expect(gameLoop.isGameEnded()).toBe(true);
+      expect(gameLoop.gameState.phase === 'playing').toBe(false);
+      expect(gameLoop.isGameEnded).toBe(true);
     });
 
     it('should pause game loop', () => {
-      gameLoop.start();
+      gameLoop.startGame();
       gameLoop.pause();
 
-      expect(gameLoop.isRunning()).toBe(false);
+      expect(gameLoop.gameState.phase === 'playing').toBe(false);
       expect(gameLoop.isPaused()).toBe(true);
     });
 
     it('should resume paused game', () => {
-      gameLoop.start();
+      gameLoop.startGame();
       gameLoop.pause();
       gameLoop.resume();
 
-      expect(gameLoop.isRunning()).toBe(true);
+      expect(gameLoop.gameState.phase === 'playing').toBe(true);
       expect(gameLoop.isPaused()).toBe(false);
     });
 
     it('should stop game loop', () => {
-      gameLoop.start();
+      gameLoop.startGame();
       gameLoop.stop();
 
-      expect(gameLoop.isRunning()).toBe(false);
-      expect(gameLoop.isGameEnded()).toBe(true);
+      expect(gameLoop.gameState.phase === 'playing').toBe(false);
+      expect(gameLoop.isGameEnded).toBe(true);
     });
   });
 
   describe('round processing', () => {
     beforeEach(() => {
-      gameLoop.start();
+      gameLoop.startGame();
     });
 
     it('should process a complete round', () => {
@@ -181,11 +184,11 @@ describe('GameLoop', () => {
     });
 
     it('should increment round number after processing', () => {
-      const initialRound = gameLoop.getCurrentRound();
+      const initialRound = gameLoop.currentRound;
 
       gameLoop.processRound();
 
-      expect(gameLoop.getCurrentRound()).toBe(initialRound + 1);
+      expect(gameLoop.currentRound).toBe(initialRound + 1);
     });
 
     it('should not process round when not running', () => {
@@ -215,8 +218,8 @@ describe('GameLoop', () => {
         autoProgressAfterMs: 5000,
       };
 
-      const shortGameLoop = new GameLoop(shortConfig, mockPlayers, mockMonsters);
-      shortGameLoop.start();
+      const shortGameLoop = new GameLoop(mockPlayers, mockMonsters, shortConfig);
+      shortGameLoop.startGame();
 
       // Process rounds until limit
       shortGameLoop.processRound(); // Round 1
@@ -230,7 +233,7 @@ describe('GameLoop', () => {
 
   describe('win conditions', () => {
     beforeEach(() => {
-      gameLoop.start();
+      gameLoop.startGame();
     });
 
     it('should detect player victory when all monsters dead', () => {
@@ -262,8 +265,8 @@ describe('GameLoop', () => {
         autoProgressAfterMs: 5000,
       };
 
-      const shortGameLoop = new GameLoop(shortConfig, mockPlayers, mockMonsters);
-      shortGameLoop.start();
+      const shortGameLoop = new GameLoop(mockPlayers, mockMonsters, shortConfig);
+      shortGameLoop.startGame();
 
       const result = shortGameLoop.processRound();
 
@@ -274,25 +277,25 @@ describe('GameLoop', () => {
 
   describe('entity management', () => {
     it('should provide read-only access to players', () => {
-      const players = gameLoop.getPlayers();
+      const players = gameLoop.getAlivePlayers();
 
       expect(players).toHaveLength(2);
       expect(players[0]).toBeInstanceOf(Player);
 
       // Should be a copy, not the original array
       players.push(new Player('extra', 'Extra Player', mockPlayerSpec, createHexCoordinate(0, 0)));
-      expect(gameLoop.getPlayers()).toHaveLength(2);
+      expect(gameLoop.getAlivePlayers()).toHaveLength(2);
     });
 
     it('should provide read-only access to monsters', () => {
-      const monsters = gameLoop.getMonsters();
+      const monsters = gameLoop.getAliveMonsters();
 
       expect(monsters).toHaveLength(2);
       expect(monsters[0]).toBeInstanceOf(Monster);
 
       // Should be a copy, not the original array
       monsters.push(new Monster('extra', mockMonsterDef, createHexCoordinate(0, 0)));
-      expect(gameLoop.getMonsters()).toHaveLength(2);
+      expect(gameLoop.getAliveMonsters()).toHaveLength(2);
     });
 
     it('should track living entities correctly', () => {
@@ -321,7 +324,7 @@ describe('GameLoop', () => {
 
   describe('action submission', () => {
     beforeEach(() => {
-      gameLoop.start();
+      gameLoop.startGame();
     });
 
     it('should accept valid player actions', () => {
@@ -423,15 +426,15 @@ describe('GameLoop', () => {
     it('should provide current game state snapshot', () => {
       const state = gameLoop.getGameState();
 
-      expect(state.round).toBe(gameLoop.getCurrentRound());
-      expect(state.isRunning).toBe(gameLoop.isRunning());
-      expect(state.isEnded).toBe(gameLoop.isGameEnded());
+      expect(state.round).toBe(gameLoop.currentRound);
+      expect(state.isRunning).toBe(gameLoop.gameState.phase === 'playing');
+      expect(state.isEnded).toBe(gameLoop.isGameEnded);
       expect(state.players).toHaveLength(2);
       expect(state.monsters).toHaveLength(2);
     });
 
     it('should track occupied positions', () => {
-      const occupiedPositions = gameLoop.getOccupiedPositions();
+      const occupiedPositions = gameLoop.gameState.occupiedPositions;
 
       expect(occupiedPositions.size).toBe(4); // 2 players + 2 monsters
       expect(occupiedPositions.has('0,0,0')).toBe(true); // player1 position
@@ -439,7 +442,7 @@ describe('GameLoop', () => {
     });
 
     it('should update occupied positions after movement', () => {
-      gameLoop.start();
+      gameLoop.startGame();
 
       const action = {
         playerId: 'player1',
@@ -450,7 +453,7 @@ describe('GameLoop', () => {
       gameLoop.submitPlayerAction(action);
       gameLoop.processRound();
 
-      const occupiedPositions = gameLoop.getOccupiedPositions();
+      const occupiedPositions = gameLoop.gameState.occupiedPositions;
 
       expect(occupiedPositions.has('0,0,0')).toBe(false); // Old position
       expect(occupiedPositions.has('2,0,-2')).toBe(true); // New position
@@ -462,7 +465,7 @@ describe('GameLoop', () => {
       // Simulate corrupted state by manually modifying entity health
       mockPlayers[0]['_currentHp'] = -100;
 
-      gameLoop.start();
+      gameLoop.startGame();
       const result = gameLoop.processRound();
 
       expect(typeof result).toBe('object');
@@ -476,10 +479,10 @@ describe('GameLoop', () => {
         autoProgressAfterMs: -500,
       };
 
-      const invalidGameLoop = new GameLoop(invalidConfig, mockPlayers, mockMonsters);
+      const invalidGameLoop = new GameLoop(mockPlayers, mockMonsters, invalidConfig);
 
-      expect(invalidGameLoop.isGameEnded()).toBe(false);
-      expect(invalidGameLoop.getCurrentRound()).toBe(0);
+      expect(invalidGameLoop.isGameEnded).toBe(false);
+      expect(invalidGameLoop.currentRound).toBe(0);
     });
 
     it('should handle large number of entities', () => {
@@ -496,8 +499,8 @@ describe('GameLoop', () => {
         );
       }
 
-      const largeGameLoop = new GameLoop(mockConfig, manyPlayers, manyMonsters);
-      largeGameLoop.start();
+      const largeGameLoop = new GameLoop(manyPlayers, manyMonsters, mockConfig);
+      largeGameLoop.startGame();
 
       const result = largeGameLoop.processRound();
 
@@ -506,7 +509,7 @@ describe('GameLoop', () => {
     });
 
     it('should handle simultaneous entity deaths', () => {
-      gameLoop.start();
+      gameLoop.startGame();
 
       // Set all entities to 1 HP
       mockPlayers.forEach(player => player.setHp(1));
@@ -520,17 +523,17 @@ describe('GameLoop', () => {
     });
 
     it('should maintain consistency after multiple operations', () => {
-      gameLoop.start();
+      gameLoop.startGame();
 
       for (let i = 0; i < 5; i++) {
         gameLoop.processRound();
 
         // Verify consistency
-        expect(gameLoop.getCurrentRound()).toBe(i + 1);
-        expect(gameLoop.getPlayers()).toHaveLength(2);
-        expect(gameLoop.getMonsters()).toHaveLength(2);
+        expect(gameLoop.currentRound).toBe(i + 1);
+        expect(gameLoop.getAlivePlayers()).toHaveLength(2);
+        expect(gameLoop.getAliveMonsters()).toHaveLength(2);
 
-        if (gameLoop.isGameEnded()) {
+        if (gameLoop.isGameEnded) {
           break;
         }
       }
@@ -539,13 +542,13 @@ describe('GameLoop', () => {
 
   describe('performance considerations', () => {
     it('should process rounds efficiently', () => {
-      gameLoop.start();
+      gameLoop.startGame();
 
       const startTime = Date.now();
       
       for (let i = 0; i < 10; i++) {
         gameLoop.processRound();
-        if (gameLoop.isGameEnded()) break;
+        if (gameLoop.isGameEnded) break;
       }
 
       const endTime = Date.now();
@@ -556,20 +559,20 @@ describe('GameLoop', () => {
     });
 
     it('should not leak memory through entity references', () => {
-      const initialPlayerCount = gameLoop.getPlayers().length;
-      const initialMonsterCount = gameLoop.getMonsters().length;
+      const initialPlayerCount = gameLoop.getAlivePlayers().length;
+      const initialMonsterCount = gameLoop.getAliveMonsters().length;
 
-      gameLoop.start();
+      gameLoop.startGame();
 
       // Process multiple rounds
       for (let i = 0; i < 5; i++) {
         gameLoop.processRound();
-        if (gameLoop.isGameEnded()) break;
+        if (gameLoop.isGameEnded) break;
       }
 
       // Entity counts should remain stable
-      expect(gameLoop.getPlayers().length).toBe(initialPlayerCount);
-      expect(gameLoop.getMonsters().length).toBe(initialMonsterCount);
+      expect(gameLoop.getAlivePlayers().length).toBe(initialPlayerCount);
+      expect(gameLoop.getAliveMonsters().length).toBe(initialMonsterCount);
     });
   });
 });

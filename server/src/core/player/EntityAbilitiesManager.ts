@@ -290,6 +290,10 @@ export class EntityAbilitiesManager {
 
   // === UTILITY ===
 
+  public getCooldownMap(): ReadonlyMap<string, number> {
+    return new Map(this._cooldowns);
+  }
+
   public calculateDamage(abilityId: string, damageModifier: number = 1.0): number {
     const ability = this.getAbility(abilityId);
     if (!ability || !ability.damage) {

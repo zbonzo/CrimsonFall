@@ -11,7 +11,7 @@ import type {
   ActionSubmissionResult,
   PlayerAction,
   PlayerActionVariant,
-} from '@/core/types/entityTypes.js';
+} from '@/core/types/playerTypes.js';
 import type { HexCoordinate } from '@/utils/hex/hexCoordinates.js';
 
 // === ACTION MANAGER ===
@@ -79,13 +79,15 @@ export class EntityActionManager {
         action = {
           variant: 'ability',
           abilityId: params.abilityId!,
-          targetId: params.targetId, // targetId can be optional for some abilities
+          targetId: params.targetId ?? undefined, // explicit undefined for exactOptionalPropertyTypes
           submissionTime,
         };
         break;
       case 'wait':
         action = { variant: 'wait', submissionTime };
         break;
+      default:
+        throw new Error(`Invalid action variant: ${actionVariant}`);
     }
 
     this._submittedAction = action;
@@ -140,6 +142,14 @@ export class EntityActionManager {
     return this._hasSubmittedAction && this._submittedAction !== null;
   }
 
+  public canAct(): boolean {
+    return !this._hasSubmittedAction;
+  }
+
+  public getPendingActions(): ReadonlyArray<import('@/core/types/playerTypes.js').PlayerAction> {
+    return this._submittedAction ? [this._submittedAction] : [];
+  }
+
   public resetForEncounter(): void {
     this.clearAction();
     this._actionHistory = [];
@@ -157,7 +167,9 @@ export class EntityActionManager {
     };
 
     for (const action of this._actionHistory) {
-      actionsByVariant[action.variant]++;
+      if (action?.variant) {
+        actionsByVariant[action.variant]++;
+      }
     }
 
     return {

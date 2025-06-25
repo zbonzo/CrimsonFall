@@ -93,7 +93,7 @@ export class DefensiveStrategy extends AIStrategyBase {
   }
 
   private findThreatenedAllies(
-    self: CombatEntity,
+    _self: CombatEntity,
     context: TargetingContext
   ): CombatEntity[] {
     return context.allies.filter(ally => {
@@ -103,7 +103,7 @@ export class DefensiveStrategy extends AIStrategyBase {
   }
 
   private findProtectivePosition(
-    self: CombatEntity,
+    _self: CombatEntity,
     ally: CombatEntity,
     context: TargetingContext
   ): { q: number; r: number; s: number } | null {

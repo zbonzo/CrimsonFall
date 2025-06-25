@@ -94,11 +94,11 @@ export class EntityStatsManager {
   }
 
   public get level(): EntityLevel {
-    const experienceToNext = this._canLevelUp ? this.calculateExperienceToNextLevel() : 0;
+    const experienceToNext = this._canLevelUp ? this.calculateExperienceToNextLevel() - this._experience : 0;
     return {
       current: this._level,
       experience: this._experience,
-      experienceToNext,
+      experienceToNext: Math.max(0, experienceToNext),
     };
   }
 
@@ -153,6 +153,18 @@ export class EntityStatsManager {
 
   public setHp(newHp: number): void {
     this._currentHp = Math.max(0, Math.min(this.maxHp, newHp));
+  }
+
+  public setCurrentHp(newHp: number): void {
+    this._currentHp = Math.max(0, Math.min(this.maxHp, newHp));
+  }
+
+  public getCurrentHp(): number {
+    return this._currentHp;
+  }
+
+  public getCurrentArmor(): number {
+    return this.effectiveArmor;
   }
 
   public revive(hpPercentage: number = 0.5): void {

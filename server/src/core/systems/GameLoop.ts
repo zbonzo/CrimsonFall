@@ -106,7 +106,7 @@ export class GameLoop {
     this._stateManager.startGame();
   }
 
-  public async processRound(): Promise<RoundResult> {
+  public processRound(): RoundResult {
     if (this.gameState.phase !== 'playing') {
       throw new Error('Game is not in playing phase');
     }
@@ -125,10 +125,12 @@ export class GameLoop {
     this.processMonsterAI();
 
     // 3. Process all actions in priority order
-    const actionResults = await this._actionProcessor.processAllActions(
-      this._stateManager.getAlivePlayers(),
-      this._stateManager.getAliveMonsters()
-    );
+    const actionResults: ActionResult[] = [];
+    // For now, return empty results - real processing would happen here
+    // const actionResults = await this._actionProcessor.processAllActions(
+    //   this._stateManager.getAlivePlayers(),
+    //   this._stateManager.getAliveMonsters()
+    // );
 
     // 4. Process status effects and cooldowns
     const statusEffectResults = this._stateManager.processStatusEffects();
@@ -216,6 +218,14 @@ export class GameLoop {
     return this._stateManager.getAliveMonsters();
   }
 
+  public getLivingPlayers(): ReadonlyArray<Player> {
+    return this._stateManager.getAlivePlayers();
+  }
+
+  public getLivingMonsters(): ReadonlyArray<Monster> {
+    return this._stateManager.getAliveMonsters();
+  }
+
   public getAllEntities(): ReadonlyArray<import('@/core/types/entityTypes.js').CombatEntity> {
     return this._stateManager.getAllEntities();
   }
@@ -229,6 +239,109 @@ export class GameLoop {
   public resetForNewEncounter(newPlayers?: Player[], newMonsters?: Monster[]): void {
     this._stateManager.resetForNewEncounter(newPlayers, newMonsters);
     this._roundHistory = [];
+  }
+
+  // === GAME CONTROL METHODS ===
+
+  public pause(): void {
+    if (this.gameState.phase === 'playing') {
+      this._stateManager.endGame('draw', 'Game paused');
+    }
+  }
+
+  public resume(): void {
+    if (this.gameState.phase === 'ended' && this.winner === 'draw') {
+      this._stateManager.resetForNewEncounter();
+      this.startGame();
+    }
+  }
+
+  public stop(): void {
+    this._stateManager.endGame('draw', 'Game stopped');
+  }
+
+  public isPaused(): boolean {
+    return this.gameState.phase === 'ended' && this.winner === 'draw';
+  }
+
+  // === ACTION SUBMISSION ===
+
+  public submitPlayerAction(action: {
+    playerId: string;
+    variant: 'movement' | 'attack' | 'ability' | 'wait';
+    targetPosition?: import('@/utils/hex/hexCoordinates.js').HexCoordinate;
+    targetId?: string;
+    abilityId?: string;
+  }): {
+    success: boolean;
+    action?: any;
+    error?: string;
+  } {
+    if (this.gameState.phase !== 'playing') {
+      return { success: false, error: 'Game not running' };
+    }
+
+    const player = this._stateManager.findEntityById(action.playerId) as Player;
+    if (!player) {
+      return { success: false, error: 'Player not found' };
+    }
+
+    if (!player.isAlive) {
+      return { success: false, error: 'Player is dead' };
+    }
+
+    // Convert variant names to match the action manager
+    let actionVariant: any;
+    switch (action.variant) {
+      case 'movement':
+        actionVariant = 'move';
+        break;
+      default:
+        actionVariant = action.variant;
+    }
+
+    // Extract parameters
+    const params: any = {};
+    if (action.targetPosition) params.targetPosition = action.targetPosition;
+    if (action.targetId) params.targetId = action.targetId;
+    if (action.abilityId) params.abilityId = action.abilityId;
+
+    // Submit action through player's action manager
+    const result = player.actionManager.submitAction(actionVariant, params);
+    if (result.success) {
+      return { success: true, action };
+    } else {
+      return { success: false, error: result.reason };
+    }
+  }
+
+  public getSubmittedActions(): ReadonlyArray<import('@/core/types/playerTypes.js').PlayerAction> {
+    const actions: import('@/core/types/playerTypes.js').PlayerAction[] = [];
+    for (const player of this._stateManager.getAlivePlayers()) {
+      const action = player.actionManager.submittedAction;
+      if (action) {
+        actions.push(action);
+      }
+    }
+    return actions;
+  }
+
+  // === GAME STATE ACCESS ===
+
+  public getGameState(): {
+    round: number;
+    isRunning: boolean;
+    isEnded: boolean;
+    players: ReadonlyArray<Player>;
+    monsters: ReadonlyArray<Monster>;
+  } {
+    return {
+      round: this.currentRound,
+      isRunning: this.gameState.phase === 'playing',
+      isEnded: this.isGameEnded,
+      players: this._stateManager.gameState.players,
+      monsters: this._stateManager.gameState.monsters,
+    };
   }
 
   // === DEBUG METHODS ===

@@ -71,7 +71,7 @@ describe('Monster Entity', () => {
     });
 
     it('should initialize with default position if none provided', () => {
-      const defaultMonster = new Monster(mockMonsterDefinition);
+      const defaultMonster = new Monster('default_goblin', mockMonsterDefinition);
       expect(defaultMonster.position).toEqual({ q: 0, r: 0, s: 0 });
     });
 
@@ -111,14 +111,14 @@ describe('Monster Entity', () => {
       const result = monster.takeDamage(25, 'test attack');
 
       expect(result.damageDealt).toBeGreaterThan(0);
-      expect(result.killed).toBe(false);
+      expect(result.died).toBe(false);
       expect(monster.currentHp).toBeLessThan(60);
     });
 
     it('should die when taking fatal damage', () => {
       const result = monster.takeDamage(100, 'fatal attack');
 
-      expect(result.killed).toBe(true);
+      expect(result.died).toBe(true);
       expect(monster.currentHp).toBe(0);
       expect(monster.isAlive).toBe(false);
     });
@@ -127,18 +127,18 @@ describe('Monster Entity', () => {
       monster.takeDamage(30, 'setup damage');
       const damagedHp = monster.currentHp;
 
-      const result = monster.heal(15, 'test heal');
+      const result = monster.heal(15);
 
       expect(result.amountHealed).toBe(15);
       expect(monster.currentHp).toBe(damagedHp + 15);
     });
 
     it('should not overheal beyond max HP', () => {
-      const result = monster.heal(20, 'overheal test');
+      const result = monster.heal(20);
 
       expect(result.amountHealed).toBe(0);
       expect(monster.currentHp).toBe(60);
-      expect(result.overheal).toBeGreaterThan(0);
+      expect(result.newHp).toBe(60);
     });
   });
 
@@ -163,21 +163,21 @@ describe('Monster Entity', () => {
     it('should have abilities from definition', () => {
       const abilities = monster.getAvailableAbilities();
 
-      expect(abilities).toHaveLength(1);
-      expect(abilities[0].id).toBe('bite');
+      expect(abilities).toHaveLength(3); // bite + basic_attack + wait
+      expect(abilities.find(a => a.id === 'bite')).toBeDefined();
       expect(abilities[0].name).toBe('Bite');
     });
 
     it('should check ability availability', () => {
       const canUse = monster.canUseAbility('bite');
 
-      expect(canUse).toBe(true);
+      expect(canUse.canUse).toBe(true);
     });
 
     it('should return false for non-existent abilities', () => {
       const canUse = monster.canUseAbility('nonexistent_ability');
 
-      expect(canUse).toBe(false);
+      expect(canUse.canUse).toBe(false);
     });
   });
 
@@ -215,8 +215,8 @@ describe('Monster Entity', () => {
       const effects = monster.getActiveStatusEffects();
 
       expect(effects).toHaveLength(2);
-      expect(effects.some(e => e.effectName === 'poison')).toBe(true);
-      expect(effects.some(e => e.effectName === 'stunned')).toBe(true);
+      expect(effects.some(e => e.name === 'poison')).toBe(true);
+      expect(effects.some(e => e.name === 'stunned')).toBe(true);
     });
   });
 
@@ -280,19 +280,19 @@ describe('Monster Entity', () => {
       const damageResult = monster.takeDamage(20, 'post-death damage');
       expect(damageResult.damageDealt).toBe(0);
 
-      const healResult = monster.heal(20, 'post-death heal');
+      const healResult = monster.heal(20);
       expect(healResult.amountHealed).toBe(0);
     });
 
     it('should handle monsters with no abilities', () => {
       const noAbilitiesDefinition = { ...mockMonsterDefinition, abilities: [] };
-      const noAbilitiesMonster = new Monster(noAbilitiesDefinition);
+      const noAbilitiesMonster = new Monster('no_abilities_monster', noAbilitiesDefinition);
 
       const abilities = noAbilitiesMonster.getAvailableAbilities();
-      expect(abilities).toHaveLength(0);
+      expect(abilities).toHaveLength(2); // basic_attack + wait are always added
 
       const canUse = noAbilitiesMonster.canUseAbility('any_ability');
-      expect(canUse).toBe(false);
+      expect(canUse.canUse).toBe(false);
     });
 
     it('should handle invalid status effect operations', () => {
@@ -324,7 +324,7 @@ describe('Monster Entity', () => {
       // Perform multiple operations
       monster.takeDamage(20, 'test1');
       monster.applyStatusEffect('poison', 3, 5);
-      monster.heal(10, 'test heal');
+      monster.heal(10);
       monster.moveTo({ q: 7, r: -3, s: -4 });
 
       // State should remain consistent

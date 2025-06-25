@@ -32,7 +32,6 @@ import type {
   MonsterPublicData,
   MovableEntity,
   MovementResult,
-  StatusEffect,
   StatusEffectTarget,
   TargetingContext,
   ThreatUpdate,
@@ -43,10 +42,7 @@ import { MonsterAI } from '@/core/ai/MonsterAI.js';
 import { EntityAbilitiesManager } from '@/core/player/EntityAbilitiesManager.js';
 import { EntityMovementManager } from '@/core/player/EntityMovementManager.js';
 import { EntityStatsManager } from '@/core/player/EntityStatsManager.js';
-import {
-  EntityStatusEffectsManager,
-  type StatusEffectName,
-} from '@/core/player/EntityStatusEffectsManager.js';
+import { EntityStatusEffectsManager } from '@/core/player/EntityStatusEffectsManager.js';
 import { ThreatCalculator } from '@/core/systems/ThreatCalculator.js';
 import { ThreatManager } from '@/core/systems/ThreatManager.js';
 
@@ -107,7 +103,7 @@ export class Monster implements CombatEntity, MovableEntity, AbilityUser, Status
 
     // Initialize behavior delegates
     this._aiBehavior = new MonsterAIBehavior(this._ai, this._threat);
-    this._combatBehavior = new MonsterCombatBehavior(this._statusEffects);
+    this._combatBehavior = new MonsterCombatBehavior();
     this._threatBehavior = new MonsterThreatBehavior(this._threat);
     this._dataExport = new MonsterDataExport();
     this._debugUtils = new MonsterDebugUtils();
@@ -172,6 +168,10 @@ export class Monster implements CombatEntity, MovableEntity, AbilityUser, Status
 
   public heal(amount: number): HealResult {
     return this._combatBehavior.heal(amount, this._stats, this._statusEffects, this.isAlive);
+  }
+
+  public setHp(amount: number): void {
+    this._stats.setCurrentHp(amount);
   }
 
   public calculateDamageOutput(baseDamage?: number): number {
@@ -352,6 +352,42 @@ export class Monster implements CombatEntity, MovableEntity, AbilityUser, Status
     return { ...this._definition };
   }
 
+  public get definition(): MonsterDefinition {
+    return this.getDefinition();
+  }
+
+  public get tags(): readonly string[] | undefined {
+    return this._definition.tags;
+  }
+
+  public get behaviors(): readonly import('@/core/types/ai.js').MonsterBehavior[] {
+    return this._definition.behaviors || [];
+  }
+
+  public get threatConfig(): import('@/core/types/ai.js').ThreatConfig | undefined {
+    return this._definition.threatConfig;
+  }
+
+  // === STATUS EFFECTS ALIASES ===
+
+  public applyStatusEffect(
+    effectName: string,
+    duration: number,
+    value?: number
+  ): { applied: boolean; effectName: string; duration: number; value?: number } {
+    const result = this.addStatusEffect(effectName, duration, value);
+    return {
+      applied: result.success,
+      effectName,
+      duration,
+      value,
+    };
+  }
+
+  public getActiveStatusEffects(): ReadonlyArray<import('@/core/types/statusEffects.js').StatusEffect> {
+    return this.activeStatusEffects;
+  }
+
   // === ROUND PROCESSING ===
 
   public processRound(): {
@@ -400,6 +436,14 @@ export class Monster implements CombatEntity, MovableEntity, AbilityUser, Status
 
   public toPrivateData(): MonsterPrivateData {
     return this._dataExport.toPrivateData(this, this._threat);
+  }
+
+  public getPublicData(): MonsterPublicData {
+    return this.toPublicData();
+  }
+
+  public getPrivateData(): MonsterPrivateData {
+    return this.toPrivateData();
   }
 
   // === DEBUG METHODS (Delegated) ===

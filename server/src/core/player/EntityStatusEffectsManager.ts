@@ -313,6 +313,24 @@ export class EntityStatusEffectsManager {
     this._stacks.clear();
   }
 
+  public getActiveStatusEffects(): ReadonlyArray<import('@/core/types/statusEffects.js').StatusEffect> {
+    return this.effects as ReadonlyArray<import('@/core/types/statusEffects.js').StatusEffect>;
+  }
+
+  public hasStatusEffect(effectName: string): boolean {
+    return this.hasEffect(effectName);
+  }
+
+  public getDamageModifierWithBase(baseDamage?: number): number {
+    const modifier = this.getDamageModifier();
+    return baseDamage ? baseDamage * modifier : modifier;
+  }
+
+  public getHealingModifierWithBase(baseHealing?: number): number {
+    const modifier = this.getHealingModifier();
+    return baseHealing ? baseHealing * modifier : modifier;
+  }
+
   // === PRIVATE HELPERS ===
 
   private addStack(

@@ -61,17 +61,30 @@ export class GameStateManager {
   private _winner: 'players' | 'monsters' | 'draw' | null = null;
 
   constructor(players: Player[], monsters: Monster[]) {
+    // Handle empty arrays gracefully
+    const playerList = Array.isArray(players) ? players : [];
+    const monsterList = Array.isArray(monsters) ? monsters : [];
+    
     this._gameState = {
       phase: 'setup',
       currentRound: 0,
-      players: [...players],
-      monsters: [...monsters],
+      players: [...playerList],
+      monsters: [...monsterList],
       occupiedPositions: this.calculateOccupiedPositions([
-        ...players,
-        ...monsters,
+        ...playerList,
+        ...monsterList,
       ] as CombatEntity[]),
       obstacles: new Set(), // No obstacles for now
     };
+    
+    // Check for instant game end conditions
+    if (playerList.length === 0 && monsterList.length > 0) {
+      this._gameEnded = true;
+      this._winner = 'monsters';
+    } else if (monsterList.length === 0 && playerList.length > 0) {
+      this._gameEnded = true;
+      this._winner = 'players';
+    }
   }
 
   // === GETTERS ===

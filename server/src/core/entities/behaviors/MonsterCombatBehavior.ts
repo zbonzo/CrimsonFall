@@ -9,7 +9,7 @@ import type { DamageResult, HealResult, StatusEffectResult } from '@/core/types/
 export class MonsterCombatBehavior {
   // Future use: status effects integration
   // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-useless-constructor
-  constructor(private readonly _statusEffects: EntityStatusEffectsManager) {}
+  constructor() {}
 
   public calculateEffectiveArmor(
     baseArmor: number,

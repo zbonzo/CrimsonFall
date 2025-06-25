@@ -6,25 +6,8 @@ import { MonsterAI } from '@/core/ai/MonsterAI.js';
 import { EntityStatsManager } from '@/core/player/EntityStatsManager.js';
 import { ThreatManager } from '@/core/systems/ThreatManager.js';
 import { MonsterPrivateData, MonsterPublicData } from '@/core/types/entityTypes.js';
+import type { Monster } from '../Monster.js';
 
-interface Monster {
-  readonly id: string;
-  readonly name: string;
-  readonly variant: 'monster';
-  readonly level: number;
-  readonly currentHp: number;
-  readonly maxHp: number;
-  readonly effectiveArmor: number;
-  readonly position: import('@/utils/hex/hexCoordinates.js').HexCoordinate;
-  readonly isAlive: boolean;
-  readonly hasMovedThisRound: boolean;
-  readonly activeStatusEffects: ReadonlyArray<import('@/core/types/entityTypes.js').StatusEffect>;
-  readonly aiVariant: import('@/core/types/entityTypes.js').MonsterAIVariant;
-  readonly difficulty: number;
-  getAvailableAbilities(): ReadonlyArray<import('@/core/types/entityTypes.js').AbilityDefinition>;
-  calculateNextAttackDamage(): number;
-  getDefinition(): import('@/core/types/entityTypes.js').MonsterDefinition;
-}
 
 export class MonsterDataExport {
   public toPublicData(monster: Monster): MonsterPublicData {
@@ -32,37 +15,41 @@ export class MonsterDataExport {
       id: monster.id,
       name: monster.name,
       variant: monster.variant,
-      level: monster.level,
       currentHp: monster.currentHp,
       maxHp: monster.maxHp,
-      armor: monster.effectiveArmor,
+      baseArmor: monster.baseArmor,
+      effectiveArmor: monster.effectiveArmor,
+      baseDamage: monster.baseDamage,
       position: monster.position,
       isAlive: monster.isAlive,
-      hasMovedThisRound: monster.hasMovedThisRound,
-      statusEffects: monster.activeStatusEffects,
-      availableAbilities: monster.getAvailableAbilities(),
+      movementRange: monster.movementRange,
       aiVariant: monster.aiVariant,
-      difficulty: monster.difficulty,
-      nextDamage: monster.calculateNextAttackDamage(),
+      abilities: monster.getAvailableAbilities(),
     };
   }
 
   public toPrivateData(monster: Monster, threat: ThreatManager): MonsterPrivateData {
     const publicData = this.toPublicData(monster);
-    return {
+    const privateData: MonsterPrivateData = {
       ...publicData,
-      threatTable: threat.getDebugInfo().threatTable,
-      lastTargets: [...threat.lastTargets],
+      threatEntries: new Map(threat.threatEntries.map(entry => [entry.playerId, entry])),
+      threatConfig: threat.config,
       behaviors: monster.getDefinition().behaviors || [],
     };
+    
+    // Only add lastDecision if it exists
+    if (monster.lastDecision) {
+      (privateData as any).lastDecision = monster.lastDecision;
+    }
+    
+    return privateData;
   }
 }
 
-interface Monster {
-  toPublicData(): import('@/core/types/entityTypes.js').MonsterPublicData;
-}
 
 export class MonsterDebugUtils {
+  private readonly dataExport = new MonsterDataExport();
+
   public getDebugInfo(
     monster: Monster,
     ai: MonsterAI,
@@ -71,7 +58,7 @@ export class MonsterDebugUtils {
     roundsActive: number
   ) {
     return {
-      entity: monster.toPublicData(),
+      entity: this.dataExport.toPublicData(monster),
       ai: ai.getDebugInfo(),
       threat: threat.getDebugInfo(),
       stats: stats.getCombatReadiness(),

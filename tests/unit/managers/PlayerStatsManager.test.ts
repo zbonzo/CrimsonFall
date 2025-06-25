@@ -35,8 +35,8 @@ const STRONG_STATS: PlayerStats = {
 
 // === HELPER FUNCTIONS ===
 
-function createStatsManager(stats: PlayerStats = DEFAULT_STATS): EntityStatsManager {
-  return new EntityStatsManager(stats);
+function createStatsManager(stats: PlayerStats = DEFAULT_STATS, canLevelUp: boolean = true): EntityStatsManager {
+  return new EntityStatsManager(stats, canLevelUp);
 }
 
 // === TESTS ===

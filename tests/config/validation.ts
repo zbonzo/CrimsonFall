@@ -5,8 +5,7 @@
  * @file tests/config/validation.ts
  */
 
-import Ajv, { type JSONSchemaType, type ErrorObject } from 'ajv';
-import addFormats from 'ajv-formats';
+import Ajv, { type ErrorObject } from 'ajv';
 import { abilityConfigSchema, type AbilityConfig } from './schemas/abilitySchema.js';
 import { monsterConfigSchema, type MonsterConfig } from './schemas/monsterSchema.js';
 
@@ -31,12 +30,8 @@ export interface ValidationError {
 const ajv = new Ajv({ 
   allErrors: true,
   verbose: true,
-  strict: false,
   removeAdditional: false
 });
-
-// Add format validators
-addFormats(ajv);
 
 // Compile schemas
 const validateAbilityConfig = ajv.compile(abilityConfigSchema);
@@ -48,7 +43,7 @@ const validateMonsterConfig = ajv.compile(monsterConfigSchema);
  * Validates an ability configuration object
  */
 export function validateAbilityConfiguration(config: unknown): ValidationResult {
-  const valid = validateAbilityConfig(config);
+  const valid = Boolean(validateAbilityConfig(config));
   const errors = validateAbilityConfig.errors || [];
   
   return {
@@ -65,7 +60,7 @@ export function validateAbilityConfiguration(config: unknown): ValidationResult 
  * Validates a monster configuration object
  */
 export function validateMonsterConfiguration(config: unknown): ValidationResult {
-  const valid = validateMonsterConfig(config);
+  const valid = Boolean(validateMonsterConfig(config));
   const errors = validateMonsterConfig.errors || [];
   
   return {
@@ -130,7 +125,7 @@ export function formatValidationErrors(errors: ErrorObject[]): string {
  * Formats a single validation error
  */
 function formatSingleError(error: ErrorObject): ValidationError {
-  const path = error.instancePath || error.schemaPath;
+  const path = (error as any).instancePath || error.schemaPath;
   const value = error.data;
   
   let message = '';
@@ -138,62 +133,62 @@ function formatSingleError(error: ErrorObject): ValidationError {
   
   switch (error.keyword) {
     case 'required':
-      message = `Missing required property: ${error.params?.missingProperty}`;
+      message = `Missing required property: ${(error.params as any)?.missingProperty}`;
       constraint = 'required';
       break;
       
     case 'type':
-      message = `Expected ${error.params?.type}, got ${typeof value}`;
+      message = `Expected ${(error.params as any)?.type}, got ${typeof value}`;
       constraint = 'type';
       break;
       
     case 'enum':
-      message = `Value must be one of: ${error.params?.allowedValues?.join(', ')}`;
+      message = `Value must be one of: ${(error.params as any)?.allowedValues?.join(', ')}`;
       constraint = 'enum';
       break;
       
     case 'minimum':
-      message = `Value ${value} is below minimum ${error.params?.limit}`;
+      message = `Value ${value} is below minimum ${(error.params as any)?.limit}`;
       constraint = 'minimum';
       break;
       
     case 'maximum':
-      message = `Value ${value} exceeds maximum ${error.params?.limit}`;
+      message = `Value ${value} exceeds maximum ${(error.params as any)?.limit}`;
       constraint = 'maximum';
       break;
       
     case 'minLength':
-      message = `String is too short (${(value as string)?.length || 0} < ${error.params?.limit})`;
+      message = `String is too short (${(value as string)?.length || 0} < ${(error.params as any)?.limit})`;
       constraint = 'minLength';
       break;
       
     case 'maxLength':
-      message = `String is too long (${(value as string)?.length || 0} > ${error.params?.limit})`;
+      message = `String is too long (${(value as string)?.length || 0} > ${(error.params as any)?.limit})`;
       constraint = 'maxLength';
       break;
       
     case 'pattern':
-      message = `String does not match required pattern: ${error.params?.pattern}`;
+      message = `String does not match required pattern: ${(error.params as any)?.pattern}`;
       constraint = 'pattern';
       break;
       
     case 'additionalProperties':
-      message = `Unexpected property: ${error.params?.additionalProperty}`;
+      message = `Unexpected property: ${(error.params as any)?.additionalProperty}`;
       constraint = 'additionalProperties';
       break;
       
     case 'const':
-      message = `Value must be exactly: ${error.params?.allowedValue}`;
+      message = `Value must be exactly: ${(error.params as any)?.allowedValue}`;
       constraint = 'const';
       break;
       
     case 'maxItems':
-      message = `Array has too many items (${(value as any[])?.length || 0} > ${error.params?.limit})`;
+      message = `Array has too many items (${(value as any[])?.length || 0} > ${(error.params as any)?.limit})`;
       constraint = 'maxItems';
       break;
       
     case 'minItems':
-      message = `Array has too few items (${(value as any[])?.length || 0} < ${error.params?.limit})`;
+      message = `Array has too few items (${(value as any[])?.length || 0} < ${(error.params as any)?.limit})`;
       constraint = 'minItems';
       break;
       
