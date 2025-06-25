@@ -56,3 +56,4 @@ temp/
 # Windows specific
 ehthumbs.db
 Desktop.ini
+.claude/settings.local.json

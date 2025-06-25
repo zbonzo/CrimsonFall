@@ -1,10 +1,14 @@
 /**
  * Jest test setup file
+ * Sets up global test configuration, custom matchers, and mock management
  * @file tests/setup.ts
  */
 
 // Import Jest to make it available
 import { jest } from '@jest/globals';
+
+// Import custom matchers
+import './helpers/assertions.js';
 
 // Global test configuration
 global.console = {
@@ -17,40 +21,38 @@ global.console = {
   error: console.error,
 };
 
-// Setup global test utilities
-declare global {
-  namespace jest {
-    interface Matchers<R> {
-      toBeValidHexCoordinate(): R;
-    }
-  }
-}
-
-// Custom Jest matchers
-expect.extend({
-  toBeValidHexCoordinate(received) {
-    const pass = Math.abs(received.q + received.r + received.s) < Number.EPSILON;
-
-    if (pass) {
-      return {
-        message: () => `expected ${JSON.stringify(received)} not to be a valid hex coordinate`,
-        pass: true,
-      };
-    } else {
-      return {
-        message: () =>
-          `expected ${JSON.stringify(received)} to be a valid hex coordinate (q + r + s = 0)`,
-        pass: false,
-      };
-    }
-  },
-});
+// Performance testing helper
+global.performance = global.performance || {
+  now: jest.fn(() => Date.now()),
+  mark: jest.fn(),
+  measure: jest.fn(),
+  clearMarks: jest.fn(),
+  clearMeasures: jest.fn(),
+  getEntriesByName: jest.fn(() => []),
+  getEntriesByType: jest.fn(() => []),
+  getEntries: jest.fn(() => [])
+};
 
 // Test environment setup
 beforeEach(() => {
   jest.clearAllMocks();
+  
+  // Reset performance.now for consistent timing in tests
+  if (jest.isMockFunction(global.performance.now)) {
+    let currentTime = 0;
+    global.performance.now.mockImplementation(() => {
+      currentTime += 1; // Each call advances time by 1ms
+      return currentTime;
+    });
+  }
 });
 
 afterEach(() => {
   jest.restoreAllMocks();
+});
+
+// Global error handler for unhandled promise rejections in tests
+process.on('unhandledRejection', (error) => {
+  console.error('Unhandled promise rejection in test:', error);
+  throw error;
 });

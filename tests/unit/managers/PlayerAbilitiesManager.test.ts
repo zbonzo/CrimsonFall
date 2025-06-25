@@ -8,7 +8,7 @@
  */
 
 import { PlayerAbilitiesManager } from '../../../../../server/src/core/player/EntityAbilitiesManager.js';
-import type { AbilityDefinition } from '../../../../../server/src/core/types/playerTypes.js';
+import type { AbilityDefinition } from '../../../../../server/src/core/types/entityTypes.js';
 
 // === TEST FIXTURES ===
 
