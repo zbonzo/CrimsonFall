@@ -5,7 +5,8 @@
  * @file tests/fixtures/monsters.ts
  */
 
-import { Monster, MonsterFactory } from '@/core/entities/Monster.js';
+import { Monster } from '@/core/entities/Monster.js';
+import { MonsterFactory } from '@/core/entities/MonsterFactory.js';
 import { createTestHex } from '../helpers/testUtils.js';
 
 // === MONSTER CONFIGURATIONS ===
@@ -25,7 +26,7 @@ export const MonsterConfigs = {
       {
         id: 'club_smash',
         name: 'Club Smash',
-        type: 'attack' as const,
+        variant: 'attack' as const,
         damage: 18,
         range: 1,
         cooldown: 2,
@@ -35,7 +36,7 @@ export const MonsterConfigs = {
       {
         id: 'battle_cry',
         name: 'Battle Cry',
-        type: 'support' as const,
+        variant: 'support' as const,
         range: 2,
         cooldown: 4,
         description: 'Enrages nearby allies',
@@ -68,7 +69,7 @@ export const MonsterConfigs = {
       {
         id: 'shortbow_shot',
         name: 'Shortbow Shot',
-        type: 'attack' as const,
+        variant: 'attack' as const,
         damage: 14,
         range: 4,
         cooldown: 0,
@@ -78,7 +79,7 @@ export const MonsterConfigs = {
       {
         id: 'poison_arrow',
         name: 'Poison Arrow',
-        type: 'attack' as const,
+        variant: 'attack' as const,
         damage: 12,
         range: 4,
         cooldown: 3,
@@ -112,7 +113,7 @@ export const MonsterConfigs = {
       {
         id: 'bone_sword',
         name: 'Bone Sword',
-        type: 'attack' as const,
+        variant: 'attack' as const,
         damage: 20,
         range: 1,
         cooldown: 1,
@@ -122,7 +123,7 @@ export const MonsterConfigs = {
       {
         id: 'undead_resilience',
         name: 'Undead Resilience',
-        type: 'support' as const,
+        variant: 'support' as const,
         range: 0,
         cooldown: 5,
         description: 'Hardens bones against damage',
@@ -155,7 +156,7 @@ export const MonsterConfigs = {
       {
         id: 'bite',
         name: 'Savage Bite',
-        type: 'attack' as const,
+        variant: 'attack' as const,
         damage: 22,
         range: 1,
         cooldown: 0,
@@ -165,7 +166,7 @@ export const MonsterConfigs = {
       {
         id: 'howl',
         name: 'Intimidating Howl',
-        type: 'support' as const,
+        variant: 'support' as const,
         range: 3,
         cooldown: 4,
         description: 'A howl that weakens enemies',
@@ -182,7 +183,7 @@ export const MonsterConfigs = {
       {
         id: 'pounce',
         name: 'Pounce',
-        type: 'attack' as const,
+        variant: 'attack' as const,
         damage: 16,
         range: 3,
         cooldown: 3,
@@ -208,7 +209,7 @@ export const MonsterConfigs = {
       {
         id: 'hammer_slam',
         name: 'Hammer Slam',
-        type: 'attack' as const,
+        variant: 'attack' as const,
         damage: 28,
         range: 1,
         cooldown: 2,
@@ -218,7 +219,7 @@ export const MonsterConfigs = {
       {
         id: 'ground_pound',
         name: 'Ground Pound',
-        type: 'attack' as const,
+        variant: 'attack' as const,
         damage: 15,
         range: 2,
         cooldown: 4,
@@ -252,7 +253,7 @@ export const MonsterConfigs = {
       {
         id: 'web_spit',
         name: 'Web Spit',
-        type: 'support' as const,
+        variant: 'support' as const,
         range: 3,
         cooldown: 2,
         description: 'Immobilizes an enemy with webbing',
@@ -269,7 +270,7 @@ export const MonsterConfigs = {
       {
         id: 'poison_bite',
         name: 'Poison Bite',
-        type: 'attack' as const,
+        variant: 'attack' as const,
         damage: 10,
         range: 1,
         cooldown: 0,
@@ -320,7 +321,7 @@ export const MonsterConfigs = {
       {
         id: 'fire_breath',
         name: 'Fire Breath',
-        type: 'attack' as const,
+        variant: 'attack' as const,
         damage: 40,
         range: 4,
         cooldown: 3,
@@ -338,7 +339,7 @@ export const MonsterConfigs = {
       {
         id: 'wing_buffet',
         name: 'Wing Buffet',
-        type: 'attack' as const,
+        variant: 'attack' as const,
         damage: 25,
         range: 2,
         cooldown: 2,
@@ -499,10 +500,8 @@ export function createFreshMonster(template: keyof typeof TestMonsters): Monster
  * Creates a group of monsters for encounter scenarios
  */
 export function createMonsterGroup(composition: (keyof typeof TestMonsters)[]): Monster[] {
-  return composition.map((template, index) => {
+  return composition.map((template) => {
     const fresh = createFreshMonster(template);
-    // Adjust positions to avoid overlaps
-    fresh.setPosition(createTestHex(3 + index, 0));
     return fresh;
   });
 }
@@ -572,7 +571,7 @@ export class MonsterBuilder {
   }
 
   public withStatusEffect(effect: string, duration: number, value?: number): this {
-    this.statusEffects.push({ effect, duration, value });
+    this.statusEffects.push(value !== undefined ? { effect, duration, value } : { effect, duration });
     return this;
   }
 

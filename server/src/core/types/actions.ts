@@ -5,7 +5,7 @@
  * @file server/src/core/types/actions.ts
  */
 
-import type { HexCoordinate } from '@/utils/hex/index.js';
+import type { HexCoordinate } from '@/utils/hex/hexCoordinates.js';
 
 // === PLAYER ACTION TYPES ===
 

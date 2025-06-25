@@ -37,7 +37,7 @@ import type {
   TargetingContext,
   ThreatUpdate,
 } from '@/core/types/entityTypes.js';
-import { ORIGIN_HEX, type HexCoordinate } from '@/utils/hex/index.js';
+import { ORIGIN_HEX, type HexCoordinate } from '@/utils/hex/hexCoordinates.js';
 
 import { MonsterAI } from '@/core/ai/MonsterAI.js';
 import { EntityAbilitiesManager } from '@/core/player/EntityAbilitiesManager.js';

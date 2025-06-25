@@ -5,7 +5,7 @@
  * @file tests/fixtures/players.ts
  */
 
-import type { PlayerClass } from '@/core/types/entityTypes.js';
+import type { PlayerSpecialization } from '@/core/types/entityTypes.js';
 import { Player } from '@/core/entities/Player.js';
 import { createTestHex } from '../helpers/testUtils.js';
 
@@ -15,7 +15,7 @@ export const PlayerClasses = {
   fighter: {
     id: 'fighter',
     name: 'Fighter',
-    type: 'player' as const,
+    variant: 'player' as const,
     description: 'A melee combat specialist with high health and armor',
     stats: {
       maxHp: 120,
@@ -27,7 +27,7 @@ export const PlayerClasses = {
       {
         id: 'power_strike',
         name: 'Power Strike',
-        type: 'attack' as const,
+        variant: 'attack' as const,
         damage: 25,
         range: 1,
         cooldown: 2,
@@ -37,7 +37,7 @@ export const PlayerClasses = {
       {
         id: 'defensive_stance',
         name: 'Defensive Stance',
-        type: 'support' as const,
+        variant: 'support' as const,
         range: 0,
         cooldown: 3,
         description: 'Reduces incoming damage for 3 rounds',
@@ -54,7 +54,7 @@ export const PlayerClasses = {
       {
         id: 'whirlwind',
         name: 'Whirlwind',
-        type: 'attack' as const,
+        variant: 'attack' as const,
         damage: 15,
         range: 1,
         cooldown: 4,
@@ -63,12 +63,13 @@ export const PlayerClasses = {
       },
     ],
     startingAbilities: ['power_strike', 'defensive_stance'],
-  } as PlayerClass,
+    progressionTable: [],
+  } as unknown as PlayerSpecialization,
 
   ranger: {
     id: 'ranger',
     name: 'Ranger',
-    type: 'player' as const,
+    variant: 'player' as const,
     description: 'A ranged combat specialist with high mobility',
     stats: {
       maxHp: 90,
@@ -80,7 +81,7 @@ export const PlayerClasses = {
       {
         id: 'shortbow_shot',
         name: 'Shortbow Shot',
-        type: 'attack' as const,
+        variant: 'attack' as const,
         damage: 20,
         range: 4,
         cooldown: 0,
@@ -90,7 +91,7 @@ export const PlayerClasses = {
       {
         id: 'hunter_mark',
         name: "Hunter's Mark",
-        type: 'support' as const,
+        variant: 'support' as const,
         range: 6,
         cooldown: 2,
         description: 'Marks a target, increasing damage against it',
@@ -107,7 +108,7 @@ export const PlayerClasses = {
       {
         id: 'rapid_shot',
         name: 'Rapid Shot',
-        type: 'attack' as const,
+        variant: 'attack' as const,
         damage: 12,
         range: 3,
         cooldown: 3,
@@ -116,12 +117,13 @@ export const PlayerClasses = {
       },
     ],
     startingAbilities: ['shortbow_shot', 'hunter_mark'],
-  } as PlayerClass,
+    progressionTable: [],
+  } as unknown as PlayerSpecialization,
 
   cleric: {
     id: 'cleric',
     name: 'Cleric',
-    type: 'player' as const,
+    variant: 'player' as const,
     description: 'A support specialist focused on healing and buffs',
     stats: {
       maxHp: 100,
@@ -133,7 +135,7 @@ export const PlayerClasses = {
       {
         id: 'heal_self',
         name: 'Heal Self',
-        type: 'healing' as const,
+        variant: 'healing' as const,
         healing: 25,
         range: 0,
         cooldown: 1,
@@ -143,7 +145,7 @@ export const PlayerClasses = {
       {
         id: 'heal_other',
         name: 'Heal Other',
-        type: 'healing' as const,
+        variant: 'healing' as const,
         healing: 30,
         range: 3,
         cooldown: 2,
@@ -153,7 +155,7 @@ export const PlayerClasses = {
       {
         id: 'bless',
         name: 'Bless',
-        type: 'support' as const,
+        variant: 'support' as const,
         range: 2,
         cooldown: 3,
         description: 'Grants a blessing that improves combat effectiveness',
@@ -170,7 +172,7 @@ export const PlayerClasses = {
       {
         id: 'holy_strike',
         name: 'Holy Strike',
-        type: 'attack' as const,
+        variant: 'attack' as const,
         damage: 16,
         range: 1,
         cooldown: 2,
@@ -179,12 +181,13 @@ export const PlayerClasses = {
       },
     ],
     startingAbilities: ['heal_self', 'bless'],
-  } as PlayerClass,
+    progressionTable: [],
+  } as unknown as PlayerSpecialization,
 
   rogue: {
     id: 'rogue',
     name: 'Rogue',
-    type: 'player' as const,
+    variant: 'player' as const,
     description: 'A stealth specialist with high damage and mobility',
     stats: {
       maxHp: 80,
@@ -196,7 +199,7 @@ export const PlayerClasses = {
       {
         id: 'sneak_attack',
         name: 'Sneak Attack',
-        type: 'attack' as const,
+        variant: 'attack' as const,
         damage: 28,
         range: 1,
         cooldown: 2,
@@ -206,7 +209,7 @@ export const PlayerClasses = {
       {
         id: 'stealth',
         name: 'Stealth',
-        type: 'support' as const,
+        variant: 'support' as const,
         range: 0,
         cooldown: 4,
         description: 'Become invisible for a short time',
@@ -223,7 +226,7 @@ export const PlayerClasses = {
       {
         id: 'poison_blade',
         name: 'Poison Blade',
-        type: 'attack' as const,
+        variant: 'attack' as const,
         damage: 15,
         range: 1,
         cooldown: 3,
@@ -240,7 +243,8 @@ export const PlayerClasses = {
       },
     ],
     startingAbilities: ['sneak_attack', 'stealth'],
-  } as PlayerClass,
+    progressionTable: [],
+  } as unknown as PlayerSpecialization,
 };
 
 // === PLAYER FIXTURES ===
@@ -299,7 +303,7 @@ export function createFreshPlayer(template: keyof typeof TestPlayers): Player {
   const fresh = new Player(
     `${original.id}_fresh_${Date.now()}`,
     original.name,
-    original.playerClass,
+    original.specialization,
     original.position
   );
 
@@ -321,10 +325,8 @@ export function createFreshPlayer(template: keyof typeof TestPlayers): Player {
  * Creates a team of players for multiplayer scenarios
  */
 export function createPlayerTeam(composition: (keyof typeof TestPlayers)[]): Player[] {
-  return composition.map((template, index) => {
+  return composition.map((template) => {
     const fresh = createFreshPlayer(template);
-    // Adjust positions to avoid overlaps
-    fresh.setPosition(createTestHex(index, 0));
     return fresh;
   });
 }
@@ -360,7 +362,7 @@ export function createSupportTeam(): Player[] {
 // === PLAYER BUILDERS ===
 
 export class PlayerBuilder {
-  private playerClass: PlayerClass = PlayerClasses.fighter;
+  private playerClass: PlayerSpecialization = PlayerClasses.fighter;
   private name: string = 'Test Player';
   private id: string = 'test_player';
   private position: ReturnType<typeof createTestHex> = createTestHex(0, 0);
@@ -372,7 +374,7 @@ export class PlayerBuilder {
     return this;
   }
 
-  public withCustomClass(playerClass: PlayerClass): this {
+  public withCustomClass(playerClass: PlayerSpecialization): this {
     this.playerClass = playerClass;
     return this;
   }
@@ -393,7 +395,7 @@ export class PlayerBuilder {
   }
 
   public withStatusEffect(effect: string, duration: number, value?: number): this {
-    this.statusEffects.push({ effect, duration, value });
+    this.statusEffects.push(value !== undefined ? { effect, duration, value } : { effect, duration });
     return this;
   }
 

@@ -8,19 +8,19 @@
  */
 
 import {
-  PlayerStatusEffectsManager,
+  EntityStatusEffectsManager,
   type StatusEffectName,
-} from '../../../../../server/src/core/player/PlayerStatusEffectsManager.js';
+} from '@/core/player/EntityStatusEffectsManager';
 
 // === HELPER FUNCTIONS ===
 
-function createEffectsManager(): PlayerStatusEffectsManager {
-  return new PlayerStatusEffectsManager();
+function createEffectsManager(): EntityStatusEffectsManager {
+  return new EntityStatusEffectsManager();
 }
 
 // === TESTS ===
 
-describe('PlayerStatusEffectsManager', () => {
+describe('EntityStatusEffectsManager', () => {
   describe('initialization', () => {
     it('should initialize with no effects', () => {
       const manager = createEffectsManager();

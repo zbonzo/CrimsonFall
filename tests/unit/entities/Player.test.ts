@@ -8,7 +8,7 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { Player } from '@/core/entities/Player';
 import type { PlayerSpecialization, MovementResult, StatusEffectResult, PlayerAction, ActionSubmissionResult } from '@/core/types/entityTypes';
-import type { HexCoordinate } from '@/utils/hex/index';
+import type { HexCoordinate } from '@/utils/hex/hexCoordinates';
 // Import test utilities using relative paths for now
 // import { TestPlayers } from '@/tests/fixtures/players';
 // import { MockPlayerFactory } from '@/tests/mocks/entities';

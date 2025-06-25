@@ -2,14 +2,10 @@ export default {
   preset: 'ts-jest/presets/default-esm',
   testEnvironment: 'node',
   extensionsToTreatAsEsm: ['.ts'],
-  globals: {
-    'ts-jest': {
-      useESM: true,
-      tsconfig: 'tsconfig.test.json',
-      injectGlobals: true,
-    },
-  },
   moduleNameMapper: {
+    // Handle .js imports from @ paths to .ts files (MUST BE FIRST)
+    '^@/(.*)\\.js$': '<rootDir>/server/src/$1',
+    
     // Handle TypeScript path mapping
     '^@/(.*)$': '<rootDir>/server/src/$1',
     '^@/client/(.*)$': '<rootDir>/client/src/$1',
@@ -27,11 +23,8 @@ export default {
       'ts-jest',
       {
         useESM: true,
-        tsconfig: {
-          module: 'ESNext',
-          target: 'ES2022',
-          moduleResolution: 'node',
-        },
+        tsconfig: 'tests/tsconfig.json',
+        injectGlobals: true,
       },
     ],
   },

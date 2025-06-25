@@ -7,7 +7,7 @@
 
 import type { AIDecision, CombatEntity, TargetingContext } from '@/core/types/entityTypes.js';
 import { ThreatManager } from '@/core/systems/ThreatManager.js';
-import { calculateHexDistance } from '@/utils/hex/index.js';
+import { calculateHexDistance } from '@/utils/hex/hexCoordinates.js';
 
 /**
  * Base class for AI strategy implementations

@@ -12,7 +12,7 @@ import type {
   PlayerAction,
   PlayerActionVariant,
 } from '@/core/types/entityTypes.js';
-import type { HexCoordinate } from '@/utils/hex/index.js';
+import type { HexCoordinate } from '@/utils/hex/hexCoordinates.js';
 
 // === ACTION MANAGER ===
 

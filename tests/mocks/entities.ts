@@ -6,8 +6,8 @@
  */
 
 import { jest } from '@jest/globals';
-import type { HexCoordinate } from '@/utils/hex/index.js';
-import type { PlayerClass } from '@/core/types/entityTypes.js';
+import type { HexCoordinate } from '@/utils/hex/hexCoordinates.js';
+import type { PlayerSpecialization } from '@/core/types/entityTypes.js';
 import { createTestHex } from '../helpers/testUtils.js';
 
 // === MOCK ENTITY INTERFACES ===
@@ -15,7 +15,7 @@ import { createTestHex } from '../helpers/testUtils.js';
 export interface MockPlayer {
   id: string;
   name: string;
-  playerClass: PlayerClass;
+  playerSpecialization: PlayerSpecialization;
   position: HexCoordinate;
   maxHp: number;
   currentHp: number;

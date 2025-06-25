@@ -5,11 +5,12 @@
  * @file tests/integration/gameLoop.test.ts
  */
 
-import { Monster, MonsterFactory } from '@/core/entities/Monster';
-import { Player } from '@/core/entities/Player';
-import { GameLoop, GameLoopFactory } from '@/core/systems/GameLoop';
-import type { PlayerClass } from '@/core/types/entityTypes';
-import { calculateHexDistance } from '@/utils/hexMath';
+import { Monster } from '@/core/entities/Monster.js';
+import { MonsterFactory } from '@/core/entities/MonsterFactory.js';
+import { Player } from '@/core/entities/Player.js';
+import { GameLoop, GameLoopFactory } from '@/core/systems/GameLoop.js';
+import type { PlayerSpecialization } from '@/core/types/players.js';
+import { calculateHexDistance } from '@/utils/hex/hexCoordinates';
 
 // === HELPER FUNCTIONS FOR TYPE SAFETY ===
 
@@ -536,7 +537,7 @@ describe('Range System', () => {
       { q: 3, r: 0, s: -3 }
     );
 
-    const testPlayerClass: PlayerClass = {
+    const testPlayerSpecialization: PlayerSpecialization = {
       id: 'test_fighter',
       name: 'Fighter',
       type: 'player',
@@ -551,7 +552,7 @@ describe('Range System', () => {
       startingAbilities: [],
     };
 
-    const player = new Player('player1', 'Hero', testPlayerClass, { q: 0, r: 0, s: 0 });
+    const player = new Player('player1', 'Hero', testPlayerSpecialization, { q: 0, r: 0, s: 0 });
     const gameLoop = new GameLoop([player], [goblinArcher]);
     gameLoop.startGame();
 
@@ -742,7 +743,7 @@ describe('Game Loop Performance', () => {
 
   it('should handle large numbers of entities efficiently', async () => {
     // Create a larger combat scenario
-    const testPlayerClass: PlayerClass = {
+    const testPlayerSpecialization: PlayerSpecialization = {
       id: 'test_fighter',
       name: 'Fighter',
       type: 'player',
@@ -754,7 +755,8 @@ describe('Game Loop Performance', () => {
 
     const players = Array.from(
       { length: 10 },
-      (_, i) => new Player(`player${i}`, `Hero${i}`, testPlayerClass, { q: i, r: 0, s: -i })
+      (_, i) =>
+        new Player(`player${i}`, `Hero${i}`, testPlayerSpecialization, { q: i, r: 0, s: -i })
     );
 
     const monsters = Array.from({ length: 10 }, (_, i) =>

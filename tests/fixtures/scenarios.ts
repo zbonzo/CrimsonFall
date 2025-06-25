@@ -5,7 +5,7 @@
  * @file tests/fixtures/scenarios.ts
  */
 
-import type { HexCoordinate } from '@/utils/hex/index.js';
+import type { HexCoordinate } from '@/utils/hex/hexCoordinates.js';
 import { GameLoop } from '@/core/systems/GameLoop.js';
 import { Player } from '@/core/entities/Player.js';
 import { Monster } from '@/core/entities/Monster.js';
@@ -127,16 +127,16 @@ export const CombatScenarios = {
   mixedCombat: (): GameScenario => {
     // Position entities for interesting tactical play
     const warrior = createFreshPlayer('warrior');
-    warrior.setPosition(createTestHex(1, 0));
+    warrior.moveTo(createTestHex(1, 0));
     
     const archer = createFreshPlayer('archer');
-    archer.setPosition(createTestHex(0, 1));
+    archer.moveTo(createTestHex(0, 1));
     
     const goblinWarrior = createFreshMonster('goblinWarrior1');
-    goblinWarrior.setPosition(createTestHex(3, 0));
+    goblinWarrior.moveTo(createTestHex(3, 0));
     
     const goblinArcher = createFreshMonster('goblinArcher1');
-    goblinArcher.setPosition(createTestHex(5, -1));
+    goblinArcher.moveTo(createTestHex(5, -1));
 
     return {
       name: 'Mixed Combat',
@@ -294,13 +294,13 @@ export const AIScenarios = {
   threatTest: (): GameScenario => {
     // Position entities for specific threat interactions
     const warrior = createFreshPlayer('warrior');
-    warrior.setPosition(createTestHex(1, 0));
+    warrior.moveTo(createTestHex(1, 0));
     
     const healer = createFreshPlayer('healer');
-    healer.setPosition(createTestHex(0, 1));
+    healer.moveTo(createTestHex(0, 1));
     
     const tacticalGoblin = createFreshMonster('goblinArcher1');
-    tacticalGoblin.setPosition(createTestHex(3, 0));
+    tacticalGoblin.moveTo(createTestHex(3, 0));
 
     return {
       name: 'Threat Test',
@@ -333,10 +333,10 @@ export const AIScenarios = {
     const monsters = MonsterScenarios.balanced().monsters;
     
     // Spread out positions
-    players[0]!.setPosition(createTestHex(0, 0));
-    players[1]!.setPosition(createTestHex(1, 1));
-    monsters[0]!.setPosition(createTestHex(5, 0));
-    monsters[1]!.setPosition(createTestHex(6, -1));
+    players[0]!.moveTo(createTestHex(0, 0));
+    players[1]!.moveTo(createTestHex(1, 1));
+    monsters[0]!.moveTo(createTestHex(5, 0));
+    monsters[1]!.moveTo(createTestHex(6, -1));
 
     return {
       name: 'AI Positioning',
@@ -356,20 +356,20 @@ export const PerformanceScenarios = {
    * Large battle scenario for performance testing
    */
   largeBattle: (): GameScenario => {
-    const players = [];
-    const monsters = [];
+    const players: Player[] = [];
+    const monsters: Monster[] = [];
 
     // Create 6 players
     for (let i = 0; i < 6; i++) {
       const player = createFreshPlayer(['warrior', 'archer', 'healer', 'rogue'][i % 4] as any);
-      player.setPosition(createTestHex(i, 0));
+      player.moveTo(createTestHex(i, 0));
       players.push(player);
     }
 
     // Create 6 monsters
     for (let i = 0; i < 6; i++) {
       const monster = createFreshMonster(['goblinWarrior1', 'goblinArcher1', 'skeletonWarrior'][i % 3] as any);
-      monster.setPosition(createTestHex(i + 8, 0));
+      monster.moveTo(createTestHex(i + 8, 0));
       monsters.push(monster);
     }
 

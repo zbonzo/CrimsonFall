@@ -8,7 +8,7 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { Monster } from '@/core/entities/Monster';
 import type { MonsterDefinition } from '@/core/types/entityTypes';
-import type { HexCoordinate } from '@/utils/hex/index';
+import type { HexCoordinate } from '@/utils/hex/hexCoordinates';
 
 describe('Monster Entity', () => {
   let monster: Monster;
@@ -59,7 +59,7 @@ describe('Monster Entity', () => {
       tags: ['common', 'humanoid'],
     };
 
-    monster = new Monster(mockMonsterDefinition, startPosition);
+    monster = new Monster('test_goblin', mockMonsterDefinition, startPosition);
   });
 
   describe('Construction', () => {

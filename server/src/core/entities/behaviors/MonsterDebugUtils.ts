@@ -15,7 +15,7 @@ interface Monster {
   readonly currentHp: number;
   readonly maxHp: number;
   readonly effectiveArmor: number;
-  readonly position: import('@/utils/hex/index.js').HexCoordinate;
+  readonly position: import('@/utils/hex/hexCoordinates.js').HexCoordinate;
   readonly isAlive: boolean;
   readonly hasMovedThisRound: boolean;
   readonly activeStatusEffects: ReadonlyArray<import('@/core/types/entityTypes.js').StatusEffect>;

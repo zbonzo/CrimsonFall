@@ -8,10 +8,10 @@
  */
 
 import {
-  PlayerActionManager,
+  EntityActionManager,
   type ActionGameStateValidator,
-} from '../../../../../server/src/core/player/PlayerActionManager.js';
-import type { PlayerAction } from '../../../../../server/src/core/types/playerTypes.js';
+} from '@/core/player/EntityActionManager';
+import type { PlayerAction } from '@/core/types/playerTypes';
 
 // === TEST FIXTURES ===
 
@@ -35,8 +35,8 @@ class MockGameStateValidator implements ActionGameStateValidator {
 
 // === HELPER FUNCTIONS ===
 
-function createActionManager(): PlayerActionManager {
-  return new PlayerActionManager();
+function createActionManager(): EntityActionManager {
+  return new EntityActionManager();
 }
 
 function createMockValidator(): MockGameStateValidator {
@@ -45,7 +45,7 @@ function createMockValidator(): MockGameStateValidator {
 
 // === TESTS ===
 
-describe('PlayerActionManager', () => {
+describe('EntityActionManager', () => {
   describe('initialization', () => {
     it('should initialize with no submitted action', () => {
       const manager = createActionManager();

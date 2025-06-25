@@ -33,7 +33,7 @@ import type {
   StatusEffectResult,
   StatusEffectTarget,
 } from '@/core/types/entityTypes.js';
-import type { HexCoordinate } from '@/utils/hex/index.js';
+import type { HexCoordinate } from '@/utils/hex/hexCoordinates.js';
 
 import { EntityAbilitiesManager } from '@/core/player/EntityAbilitiesManager.js';
 import { EntityActionManager } from '@/core/player/EntityActionManager.js';

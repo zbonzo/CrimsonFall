@@ -22,7 +22,7 @@ import type {
   MonsterBehavior,
   TargetingContext,
 } from '@/core/types/entityTypes.js';
-import { calculateHexDistance } from '@/utils/hex/index.js';
+import { calculateHexDistance } from '@/utils/hex/hexCoordinates.js';
 import { 
   AIStrategyBase,
   AggressiveStrategy,

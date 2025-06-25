@@ -5,7 +5,7 @@
  * @file server/src/core/types/ai.ts
  */
 
-import type { HexCoordinate } from '@/utils/hex/index.js';
+import type { HexCoordinate } from '@/utils/hex/hexCoordinates.js';
 import type { CombatEntity } from './combat.js';
 
 // === AI DECISION TYPES ===

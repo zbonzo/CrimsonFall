@@ -7,7 +7,7 @@
  * @file server/src/core/types/playerTypes.ts
  */
 
-import type { HexCoordinate } from '@/utils/hex/index.js';
+import type { HexCoordinate } from '@/utils/hex/hexCoordinates.js';
 
 // === PLAYER IDENTITY ===
 

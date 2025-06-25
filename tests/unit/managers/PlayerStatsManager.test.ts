@@ -7,8 +7,8 @@
  * @file tests/unit/server/core/player/PlayerStatsManager.test.ts
  */
 
-import { PlayerStatsManager } from '../../../../../server/src/core/player/PlayerStatsManager.js';
-import type { PlayerStats } from '../../../../../server/src/core/types/playerTypes.js';
+import { EntityStatsManager } from '@/core/player/EntityStatsManager';
+import type { PlayerStats } from '@/core/types/playerTypes';
 
 // === TEST FIXTURES ===
 
@@ -35,13 +35,13 @@ const STRONG_STATS: PlayerStats = {
 
 // === HELPER FUNCTIONS ===
 
-function createStatsManager(stats: PlayerStats = DEFAULT_STATS): PlayerStatsManager {
-  return new PlayerStatsManager(stats);
+function createStatsManager(stats: PlayerStats = DEFAULT_STATS): EntityStatsManager {
+  return new EntityStatsManager(stats);
 }
 
 // === TESTS ===
 
-describe('PlayerStatsManager', () => {
+describe('EntityStatsManager', () => {
   describe('initialization', () => {
     it('should initialize with default stats', () => {
       const manager = createStatsManager();

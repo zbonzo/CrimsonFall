@@ -5,7 +5,7 @@
  * @file tests/helpers/assertions.ts
  */
 
-import type { HexCoordinate } from '@/utils/hex/index.js';
+import type { HexCoordinate } from '@/utils/hex/hexCoordinates.js';
 import type { Player } from '@/core/entities/Player.js';
 import type { Monster } from '@/core/entities/Monster.js';
 

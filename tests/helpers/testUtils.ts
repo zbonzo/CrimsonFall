@@ -5,10 +5,11 @@
  * @file tests/helpers/testUtils.ts
  */
 
-import type { HexCoordinate } from '@/utils/hex/index.js';
-import type { PlayerClass } from '@/core/types/entityTypes.js';
+import type { HexCoordinate } from '@/utils/hex/hexCoordinates.js';
+import type { PlayerSpecialization } from '@/core/types/entityTypes.js';
 import { Player } from '@/core/entities/Player.js';
-import { Monster, MonsterFactory } from '@/core/entities/Monster.js';
+import { Monster } from '@/core/entities/Monster.js';
+import { MonsterFactory } from '@/core/entities/MonsterFactory.js';
 
 // === COORDINATE UTILITIES ===
 
@@ -56,11 +57,11 @@ export function expectValidHex(hex: HexCoordinate): void {
 /**
  * Creates a basic test player class configuration
  */
-export function createTestPlayerClass(overrides: Partial<PlayerClass> = {}): PlayerClass {
+export function createTestPlayerSpecialization(overrides: Partial<PlayerSpecialization> = {}): PlayerSpecialization {
   return {
     id: 'test_fighter',
     name: 'Test Fighter',
-    type: 'player',
+    variant: 'player',
     description: 'A basic fighter for testing',
     stats: {
       maxHp: 100,
@@ -82,10 +83,10 @@ export function createTestPlayer(
   id: string = 'test_player',
   name: string = 'Test Player',
   position: HexCoordinate = ORIGIN_HEX,
-  classOverrides: Partial<PlayerClass> = {}
+  specializationOverrides: Partial<PlayerSpecialization> = {}
 ): Player {
-  const playerClass = createTestPlayerClass(classOverrides);
-  return new Player(id, name, playerClass, position);
+  const playerSpecialization = createTestPlayerSpecialization(specializationOverrides);
+  return new Player(id, name, playerSpecialization, position);
 }
 
 /**
@@ -100,7 +101,8 @@ export function createTestMonster(
   const defaultConfig = {
     id: 'test_goblin',
     name: 'Test Goblin',
-    type: 'monster' as const,
+    variant: 'monster' as const,
+    description: 'A test goblin',
     stats: {
       maxHp: 50,
       baseArmor: 1,

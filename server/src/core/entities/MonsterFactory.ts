@@ -6,7 +6,7 @@
  */
 
 import type { MonsterDefinition } from '@/core/types/entityTypes.js';
-import type { HexCoordinate } from '@/utils/hex/index.js';
+import type { HexCoordinate } from '@/utils/hex/hexCoordinates.js';
 
 import { Monster } from './Monster.js';
 

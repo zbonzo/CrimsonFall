@@ -8,13 +8,13 @@
  */
 
 // Core coordinate system
-export * from './hexCoordinates.js';
+export * from './hexCoordinates';
 
 // Range and area calculations
-export * from './hexRanges.js';
+export * from './hexRanges';
 
 // Pathfinding algorithms
-export * from './hexPathfinding.js';
+export * from './hexPathfinding';
 
 // Line of sight calculations
-export * from './hexLineOfSight.js';
+export * from './hexLineOfSight';

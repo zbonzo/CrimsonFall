@@ -6,7 +6,7 @@
  */
 
 import { jest } from '@jest/globals';
-import type { HexCoordinate } from '@/utils/hex/index.js';
+import type { HexCoordinate } from '@/utils/hex/hexCoordinates.js';
 import { createTestHex } from '../helpers/testUtils.js';
 
 // === GAME LOOP SERVICE MOCKS ===

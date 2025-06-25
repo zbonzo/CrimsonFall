@@ -7,8 +7,8 @@
  * @file tests/unit/server/core/player/PlayerAbilitiesManager.test.ts
  */
 
-import { PlayerAbilitiesManager } from '../../../../../server/src/core/player/EntityAbilitiesManager.js';
-import type { AbilityDefinition } from '../../../../../server/src/core/types/entityTypes.js';
+import { EntityAbilitiesManager } from '@/core/player/EntityAbilitiesManager';
+import type { AbilityDefinition } from '@/core/types/entityTypes';
 
 // === TEST FIXTURES ===
 
@@ -16,7 +16,7 @@ const CLASS_ABILITIES: AbilityDefinition[] = [
   {
     id: 'fireball',
     name: 'Fireball',
-    type: 'attack',
+    variant: 'attack',
     damage: 20,
     range: 3,
     cooldown: 2,
@@ -25,7 +25,7 @@ const CLASS_ABILITIES: AbilityDefinition[] = [
   {
     id: 'heal',
     name: 'Heal',
-    type: 'healing',
+    variant: 'healing',
     healing: 15,
     range: 2,
     cooldown: 1,
@@ -34,7 +34,7 @@ const CLASS_ABILITIES: AbilityDefinition[] = [
   {
     id: 'shield',
     name: 'Shield',
-    type: 'defense',
+    variant: 'defense',
     range: 1,
     cooldown: 3,
     description: 'Protect an ally',
@@ -42,7 +42,7 @@ const CLASS_ABILITIES: AbilityDefinition[] = [
   {
     id: 'teleport',
     name: 'Teleport',
-    type: 'utility',
+    variant: 'utility',
     range: 5,
     cooldown: 4,
     description: 'Instantly move to target location',
@@ -52,7 +52,7 @@ const CLASS_ABILITIES: AbilityDefinition[] = [
 const TEMPORARY_ABILITY: AbilityDefinition = {
   id: 'magic_sword',
   name: 'Magic Sword',
-  type: 'attack',
+  variant: 'attack',
   damage: 25,
   range: 1,
   cooldown: 0,
@@ -61,13 +61,13 @@ const TEMPORARY_ABILITY: AbilityDefinition = {
 
 // === HELPER FUNCTIONS ===
 
-function createAbilitiesManager(classAbilities: AbilityDefinition[] = []): PlayerAbilitiesManager {
-  return new PlayerAbilitiesManager(classAbilities);
+function createAbilitiesManager(classAbilities: AbilityDefinition[] = []): EntityAbilitiesManager {
+  return new EntityAbilitiesManager(classAbilities);
 }
 
 // === TESTS ===
 
-describe('PlayerAbilitiesManager', () => {
+describe('EntityAbilitiesManager', () => {
   describe('initialization', () => {
     it('should initialize with default basic abilities only', () => {
       const manager = createAbilitiesManager();
@@ -119,16 +119,16 @@ describe('PlayerAbilitiesManager', () => {
       const manager = createAbilitiesManager(CLASS_ABILITIES);
       // All abilities are now unlocked by default
 
-      const attackAbilities = manager.getAbilitiesByType('attack');
+      const attackAbilities = manager.getAbilitiesByVariant('attack');
       expect(attackAbilities).toHaveLength(2); // basic_attack + fireball
 
-      const healingAbilities = manager.getAbilitiesByType('healing');
+      const healingAbilities = manager.getAbilitiesByVariant('healing');
       expect(healingAbilities).toHaveLength(1); // heal
 
-      const utilityAbilities = manager.getAbilitiesByType('utility');
+      const utilityAbilities = manager.getAbilitiesByVariant('utility');
       expect(utilityAbilities).toHaveLength(2); // wait + teleport
 
-      const defenseAbilities = manager.getAbilitiesByType('defense');
+      const defenseAbilities = manager.getAbilitiesByVariant('defense');
       expect(defenseAbilities).toHaveLength(1); // shield
     });
 
@@ -138,13 +138,13 @@ describe('PlayerAbilitiesManager', () => {
       manager.removeUnlock('fireball');
       manager.removeUnlock('heal');
 
-      const attackAbilities = manager.getAbilitiesByType('attack');
+      const attackAbilities = manager.getAbilitiesByVariant('attack');
       expect(attackAbilities).toHaveLength(1); // Only basic_attack
 
-      const healingAbilities = manager.getAbilitiesByType('healing');
+      const healingAbilities = manager.getAbilitiesByVariant('healing');
       expect(healingAbilities).toHaveLength(0); // heal unlocked removed
 
-      const utilityAbilities = manager.getAbilitiesByType('utility');
+      const utilityAbilities = manager.getAbilitiesByVariant('utility');
       expect(utilityAbilities).toHaveLength(2); // wait + teleport still unlocked
     });
   });

@@ -5,7 +5,7 @@
  * @file server/src/core/types/combat.ts
  */
 
-import type { HexCoordinate } from '@/utils/hex/index.js';
+import type { HexCoordinate } from '@/utils/hex/hexCoordinates.js';
 
 // === COMBAT RESULT TYPES ===
 

@@ -7,8 +7,8 @@
  * @file tests/unit/server/core/player/PlayerMovementManager.test.ts
  */
 
-import { PlayerMovementManager } from '../../../../../server/src/core/player/PlayerMovementManager.js';
-import type { HexCoordinate } from '../../../../../server/src/utils/hexMath.js';
+import { EntityMovementManager } from '@/core/player/EntityMovementManager';
+import type { HexCoordinate } from '@/utils/hex/hexCoordinates';
 
 // === TEST FIXTURES ===
 
@@ -30,8 +30,8 @@ const NEAR_POSITION: HexCoordinate = { q: 2, r: 1, s: -3 };
 function createMovementManager(
   startingPosition: HexCoordinate = ORIGIN,
   movementRange: number = 3
-): PlayerMovementManager {
-  return new PlayerMovementManager(startingPosition, movementRange);
+): EntityMovementManager {
+  return new EntityMovementManager(startingPosition, movementRange);
 }
 
 function createObstacleSet(positions: HexCoordinate[]): ReadonlySet<string> {
@@ -44,7 +44,7 @@ function createOccupiedSet(positions: HexCoordinate[]): ReadonlySet<string> {
 
 // === TESTS ===
 
-describe('PlayerMovementManager', () => {
+describe('EntityMovementManager', () => {
   describe('initialization', () => {
     test('should initialize with default position and range', () => {
       const manager = createMovementManager();

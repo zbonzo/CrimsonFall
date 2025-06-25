@@ -24,7 +24,7 @@ import type {
   StatusEffectTarget,
 } from '@/core/types/entityTypes.js';
 import type { PlayerAction } from '@/core/types/playerTypes.js';
-import { calculateHexDistance, type HexCoordinate } from '@/utils/hex/index.js';
+import { calculateHexDistance, type HexCoordinate } from '@/utils/hex/hexCoordinates.js';
 
 import { Monster } from '@/core/entities/Monster.js';
 import { Player } from '@/core/entities/Player.js';

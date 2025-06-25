@@ -7,12 +7,11 @@
 
 import {
   type HexCoordinate,
-  type MovementRange,
   calculateHexDistance,
   createHexCoordinate,
-  findHexPath,
-  getHexesInRange,
-} from '@/utils/hex/index.js';
+} from '@/utils/hex/hexCoordinates.js';
+import { findHexPath } from '@/utils/hex/hexPathfinding.js';
+import { getHexesInRange, type MovementRange } from '@/utils/hex/hexRanges.js';
 
 import type { MovementResult } from '../types/playerTypes.js';
 
