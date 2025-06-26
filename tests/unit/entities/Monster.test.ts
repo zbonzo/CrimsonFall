@@ -5,7 +5,7 @@
  * @file tests/unit/entities/Monster.test.ts
  */
 
-import { describe, it, expect, beforeEach, jest } from '@jest/globals';
+import { describe, it, expect, beforeEach } from '@jest/globals';
 import { Monster } from '@/core/entities/Monster';
 import type { MonsterDefinition } from '@/core/types/entityTypes';
 import type { HexCoordinate } from '@/utils/hex/hexCoordinates';
@@ -37,7 +37,7 @@ describe('Monster Entity', () => {
           range: 1,
           cooldown: 0,
           description: 'Basic bite attack',
-          targetType: 'enemy',
+          // targetType: 'enemy', // Property doesn't exist on AbilityDefinition
           statusEffects: [],
         },
       ],
@@ -165,7 +165,7 @@ describe('Monster Entity', () => {
 
       expect(abilities).toHaveLength(3); // bite + basic_attack + wait
       expect(abilities.find(a => a.id === 'bite')).toBeDefined();
-      expect(abilities[0].name).toBe('Bite');
+      expect(abilities[0]!.name).toBe('Bite');
     });
 
     it('should check ability availability', () => {
@@ -230,7 +230,7 @@ describe('Monster Entity', () => {
         position: monster.position,
         maxHp: monster.maxHp,
         currentHp: monster.currentHp,
-        currentArmor: monster.currentArmor,
+        effectiveArmor: monster.effectiveArmor,
         movementRange: monster.movementRange,
         isAlive: monster.isAlive,
         canAct: monster.canAct(),
@@ -252,7 +252,7 @@ describe('Monster Entity', () => {
         maxHp: monster.maxHp,
         currentHp: monster.currentHp,
         baseArmor: monster.baseArmor,
-        currentArmor: monster.currentArmor,
+        effectiveArmor: monster.effectiveArmor,
         baseDamage: monster.baseDamage,
         movementRange: monster.movementRange,
         isAlive: monster.isAlive,
@@ -317,7 +317,7 @@ describe('Monster Entity', () => {
       monster.removeStatusEffect('enraged');
       const remainingEffects = monster.getActiveStatusEffects();
       expect(remainingEffects).toHaveLength(2);
-      expect(remainingEffects.some(e => e.effectName === 'enraged')).toBe(false);
+      expect(remainingEffects.some(e => e.name === 'enraged')).toBe(false);
     });
 
     it('should maintain state consistency under complex operations', () => {

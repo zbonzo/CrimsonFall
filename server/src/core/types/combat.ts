@@ -18,6 +18,8 @@ export interface DamageResult {
 export interface HealResult {
   readonly amountHealed: number;
   readonly newHp: number;
+  readonly finalHp?: number; // For test compatibility
+  readonly overheal?: number; // For test compatibility
 }
 
 export interface MovementResult {

@@ -88,11 +88,11 @@ export const MockPlayerFactory = {
   healthy: (overrides: Partial<MockPlayer> = {}): MockPlayer => ({
     id: 'mock_player',
     name: 'Mock Player',
-    playerClass: {
-      id: 'fighter',
+    playerSpecialization: {
+      id: 'test_fighter',
       name: 'Fighter',
-      type: 'player',
-      description: 'A mock fighter',
+      variant: 'player',
+      description: 'A test fighter class',
       stats: { maxHp: 100, baseArmor: 2, baseDamage: 15, movementRange: 3 },
       abilities: [],
       startingAbilities: [],
@@ -155,7 +155,7 @@ export const MockPlayerFactory = {
   withStatusEffects: (effects: Array<{ name: string; duration: number; value?: number }>, overrides: Partial<MockPlayer> = {}): MockPlayer => ({
     ...MockPlayerFactory.healthy(overrides),
     activeStatusEffects: effects,
-    hasStatusEffect: jest.fn().mockImplementation((effectName: string) => 
+    hasStatusEffect: (jest.fn() as any).mockImplementation((effectName: string) => 
       effects.some(e => e.name === effectName)
     ),
     ...overrides,
@@ -169,7 +169,7 @@ export const MockPlayerFactory = {
     canAct: jest.fn().mockReturnValue(false),
     canMove: jest.fn().mockReturnValue(false),
     activeStatusEffects: [{ name: 'stunned', duration: 2, value: 1 }],
-    hasStatusEffect: jest.fn().mockImplementation((name: string) => name === 'stunned'),
+    hasStatusEffect: (jest.fn() as any).mockImplementation((name: string) => name === 'stunned'),
     ...overrides,
   }),
 
@@ -179,18 +179,18 @@ export const MockPlayerFactory = {
   withAbilities: (abilities: Array<{ id: string; name: string; damage?: number; healing?: number; range: number }>, overrides: Partial<MockPlayer> = {}): MockPlayer => {
     const mock = MockPlayerFactory.healthy(overrides);
     
-    mock.getAbility = jest.fn().mockImplementation((abilityId: string) => 
+    mock.getAbility = (jest.fn() as any).mockImplementation((abilityId: string) => 
       abilities.find(a => a.id === abilityId) || null
     );
     
     mock.getAvailableAbilities = jest.fn().mockReturnValue(abilities);
     
-    mock.canUseAbility = jest.fn().mockImplementation((abilityId: string) => ({
+    mock.canUseAbility = (jest.fn() as any).mockImplementation((abilityId: string) => ({
       canUse: abilities.some(a => a.id === abilityId),
       reason: abilities.some(a => a.id === abilityId) ? undefined : 'Ability not found'
     }));
     
-    mock.useAbility = jest.fn().mockImplementation((abilityId: string) => ({
+    mock.useAbility = (jest.fn() as any).mockImplementation((abilityId: string) => ({
       success: abilities.some(a => a.id === abilityId),
       reason: abilities.some(a => a.id === abilityId) ? undefined : 'Ability not found'
     }));
@@ -208,16 +208,19 @@ export const MockPlayerFactory = {
     const healAbility = {
       id: 'heal_self',
       name: 'Heal Self',
+      variant: 'healing' as const,
       healing: 25,
-      range: 0
+      range: 0,
+      cooldown: 0,
+      description: 'Heal yourself for 25 HP'
     };
 
     return MockPlayerFactory.withAbilities([healAbility], {
       ...overrides,
-      playerClass: {
+      playerSpecialization: {
         id: 'cleric',
         name: 'Cleric',
-        type: 'player',
+        variant: 'player',
         description: 'A mock healer',
         stats: { maxHp: 80, baseArmor: 1, baseDamage: 10, movementRange: 3 },
         abilities: [healAbility],
@@ -233,16 +236,19 @@ export const MockPlayerFactory = {
     const rangedAbility = {
       id: 'shortbow_shot',
       name: 'Shortbow Shot',
+      variant: 'attack' as const,
       damage: 16,
-      range: 4
+      range: 4,
+      cooldown: 0,
+      description: 'A ranged attack with a shortbow'
     };
 
     return MockPlayerFactory.withAbilities([rangedAbility], {
       ...overrides,
-      playerClass: {
+      playerSpecialization: {
         id: 'ranger',
         name: 'Ranger',
-        type: 'player',
+        variant: 'player',
         description: 'A mock archer',
         stats: { maxHp: 90, baseArmor: 1, baseDamage: 14, movementRange: 4 },
         abilities: [rangedAbility],
@@ -323,7 +329,7 @@ export const MockMonsterFactory = {
   withStatusEffects: (effects: Array<{ name: string; duration: number; value?: number }>, overrides: Partial<MockMonster> = {}): MockMonster => ({
     ...MockMonsterFactory.basic(overrides),
     activeStatusEffects: effects,
-    hasStatusEffect: jest.fn().mockImplementation((effectName: string) => 
+    hasStatusEffect: (jest.fn() as any).mockImplementation((effectName: string) => 
       effects.some(e => e.name === effectName)
     ),
     ...overrides,
@@ -336,7 +342,7 @@ export const MockMonsterFactory = {
     ...MockMonsterFactory.basic(overrides),
     variant: 'aggressive_goblin',
     makeDecision: jest.fn().mockReturnValue({ 
-      variant: 'attack', 
+      variant: 'attack' as const, 
       priority: 10, 
       confidence: 0.9,
       target: { id: 'player1' }
@@ -365,7 +371,7 @@ export const MockMonsterFactory = {
   withThreat: (threatData: Record<string, number>, overrides: Partial<MockMonster> = {}): MockMonster => {
     const mock = MockMonsterFactory.basic(overrides);
     
-    mock.getThreat = jest.fn().mockImplementation((playerId: string) => 
+    mock.getThreat = (jest.fn() as any).mockImplementation((playerId: string) => 
       threatData[playerId] || 0
     );
     
@@ -541,7 +547,7 @@ export function expectEntityMethodsCalled(
 export function setupEntityMockChain(entity: MockPlayer | MockMonster, chain: Array<{
   method: string;
   returnValue?: any;
-  implementation?: Function;
+  implementation?: (...args: unknown[]) => unknown;
 }>): void {
   chain.forEach(({ method, returnValue, implementation }) => {
     const mockMethod = (entity as any)[method];

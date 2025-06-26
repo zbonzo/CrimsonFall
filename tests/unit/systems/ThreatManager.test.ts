@@ -5,9 +5,9 @@
  * @file tests/unit/systems/ThreatManager.test.ts
  */
 
-import { describe, it, expect, beforeEach, jest } from '@jest/globals';
+import { describe, it, expect, beforeEach } from '@jest/globals';
 import { ThreatManager } from '@/core/systems/ThreatManager';
-import type { ThreatConfig, ThreatUpdate, CombatEntity, TargetingResult } from '@/core/types/entityTypes';
+import type { ThreatConfig, ThreatUpdate, CombatEntity } from '@/core/types/entityTypes';
 
 describe('ThreatManager', () => {
   let threatManager: ThreatManager;
@@ -208,26 +208,47 @@ describe('ThreatManager', () => {
         {
           id: 'player1',
           name: 'Player 1',
+          variant: 'player' as const,
           currentHp: 80,
           maxHp: 100,
+          effectiveArmor: 2,
           position: { q: 1, r: 0, s: -1 },
           isAlive: true,
+          takeDamage: () => ({ damageDealt: 0, blocked: 0, died: false }),
+          heal: () => ({ amountHealed: 0, newHp: 80 }),
+          calculateDamageOutput: () => 15,
+          canAct: () => true,
+          canMove: () => true,
         },
         {
           id: 'player2',
           name: 'Player 2',
+          variant: 'player' as const,
           currentHp: 60,
           maxHp: 100,
+          effectiveArmor: 1,
           position: { q: 2, r: 0, s: -2 },
           isAlive: true,
+          takeDamage: () => ({ damageDealt: 0, blocked: 0, died: false }),
+          heal: () => ({ amountHealed: 0, newHp: 60 }),
+          calculateDamageOutput: () => 12,
+          canAct: () => true,
+          canMove: () => true,
         },
         {
           id: 'player3',
           name: 'Player 3',
+          variant: 'player' as const,
           currentHp: 100,
           maxHp: 100,
+          effectiveArmor: 3,
           position: { q: 0, r: 1, s: -1 },
           isAlive: true,
+          takeDamage: () => ({ damageDealt: 0, blocked: 0, died: false }),
+          heal: () => ({ amountHealed: 0, newHp: 100 }),
+          calculateDamageOutput: () => 18,
+          canAct: () => true,
+          canMove: () => true,
         },
       ];
     });
@@ -310,10 +331,17 @@ describe('ThreatManager', () => {
         {
           id: 'player1',
           name: 'Dead Player',
+          variant: 'player' as const,
           currentHp: 0,
           maxHp: 100,
+          effectiveArmor: 0,
           position: { q: 1, r: 0, s: -1 },
           isAlive: false,
+          takeDamage: () => ({ damageDealt: 0, blocked: 0, died: false }),
+          heal: () => ({ amountHealed: 0, newHp: 0 }),
+          calculateDamageOutput: () => 0,
+          canAct: () => false,
+          canMove: () => false,
         },
       ];
 
@@ -381,8 +409,8 @@ describe('ThreatManager', () => {
       const topThreats = threatManager.getTopThreats(1);
 
       expect(topThreats).toHaveLength(1);
-      expect(topThreats[0].playerId).toBeDefined();
-      expect(topThreats[0].threatValue).toBeGreaterThan(0);
+      expect(topThreats[0]!.playerId).toBeDefined();
+      expect(topThreats[0]!.threatValue).toBeGreaterThan(0);
     });
 
     it('should sort top threats by value', () => {
@@ -401,8 +429,8 @@ describe('ThreatManager', () => {
       const topThreats = threatManager.getTopThreats(3);
 
       expect(topThreats).toHaveLength(3);
-      expect(topThreats[0].threatValue).toBeGreaterThanOrEqual(topThreats[1].threatValue);
-      expect(topThreats[1].threatValue).toBeGreaterThanOrEqual(topThreats[2].threatValue);
+      expect(topThreats[0]!.threatValue).toBeGreaterThanOrEqual(topThreats[1]!.threatValue);
+      expect(topThreats[1]!.threatValue).toBeGreaterThanOrEqual(topThreats[2]!.threatValue);
     });
   });
 
@@ -433,8 +461,8 @@ describe('ThreatManager', () => {
       const threatHistory = threatManager.getThreatHistory('player1');
 
       expect(threatHistory).toHaveLength(2);
-      expect(threatHistory[0].source).toBe('attack');
-      expect(threatHistory[1].source).toBe('attack2');
+      expect(threatHistory[0]!.source).toBe('attack');
+      expect(threatHistory[1]!.source).toBe('attack2');
     });
 
     it('should track healing threat history', () => {
@@ -463,8 +491,8 @@ describe('ThreatManager', () => {
       const healingHistory = threatManager.getThreatHistory('healer1');
 
       expect(healingHistory).toHaveLength(2);
-      expect(healingHistory[0].healingDone).toBe(10);
-      expect(healingHistory[1].healingDone).toBe(15);
+      expect(healingHistory[0]!.healingDone).toBe(10);
+      expect(healingHistory[1]!.healingDone).toBe(15);
     });
 
     it('should return empty history for unknown players', () => {

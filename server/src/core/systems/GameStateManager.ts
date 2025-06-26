@@ -109,7 +109,19 @@ export class GameStateManager {
 
   public startGame(): void {
     if (this._gameState.phase !== 'setup') {
-      throw new Error('Game has already started');
+      return; // Silently ignore if already started
+    }
+
+    // Check if game should end immediately
+    const endCondition = this.checkGameEndConditions();
+    if (endCondition.gameEnded) {
+      this._gameEnded = true;
+      this._winner = endCondition.winner || 'draw';
+      this._gameState = {
+        ...this._gameState,
+        phase: 'ended',
+      };
+      return;
     }
 
     this._gameState = {
@@ -121,11 +133,13 @@ export class GameStateManager {
   }
 
   public advanceToNextRound(): void {
-    this._currentRound++;
-    this._gameState = {
-      ...this._gameState,
-      currentRound: this._currentRound,
-    };
+    if (this._gameState.phase === 'playing') {
+      this._currentRound++;
+      this._gameState = {
+        ...this._gameState,
+        currentRound: this._currentRound,
+      };
+    }
   }
 
   public endGame(
@@ -231,7 +245,7 @@ export class GameStateManager {
   }
 
   public checkMaxRounds(maxRounds: number): GameEndCondition {
-    if (this._currentRound >= maxRounds) {
+    if (this._currentRound > maxRounds) {
       return {
         gameEnded: true,
         winner: 'draw',

@@ -31,8 +31,8 @@ type MonsterConfig = {
     readonly name: string;
     readonly type: 'attack' | 'healing' | 'support' | 'movement';
     readonly description?: string;
-    readonly damage?: number;
-    readonly healing?: number;
+    readonly damage: number;
+    readonly healing: number;
     readonly range: number;
     readonly cooldown?: number;
     readonly targetType?: 'enemy' | 'ally' | 'self' | 'area' | 'any';
@@ -257,12 +257,17 @@ export class MonsterConfigLoader {
         cooldown: ability.cooldown || 0,
         description: ability.description || '',
         targetType: ability.targetType as any,
-        statusEffects: ability.statusEffects?.map(effect => ({
-          effectName: effect.effectName,
-          duration: effect.duration,
-          value: effect.value,
-          chance: effect.chance || 1.0,
-        })) || [],
+        statusEffects: ability.statusEffects?.map(effect => {
+          const statusEffect: any = {
+            effectName: effect.effectName,
+            duration: effect.duration,
+            chance: effect.chance || 1.0,
+          };
+          if (effect.value !== undefined) {
+            statusEffect.value = effect.value;
+          }
+          return statusEffect;
+        }) || [],
       })) || [],
       aiVariant: config.aiType as any,
       threatConfig: {
@@ -531,4 +536,3 @@ export async function loadEncounterMonsters(criteria: {
 
 // Export types and default
 export { MonsterConfigLoader as default, type MonsterConfig, type ValidationResult };
-export type { LoadedMonsterConfig, MonsterConfigLoadResult };

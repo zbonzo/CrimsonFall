@@ -376,12 +376,15 @@ export class Monster implements CombatEntity, MovableEntity, AbilityUser, Status
     value?: number
   ): { applied: boolean; effectName: string; duration: number; value?: number } {
     const result = this.addStatusEffect(effectName, duration, value);
-    return {
+    const returnValue: { applied: boolean; effectName: string; duration: number; value?: number } = {
       applied: result.success,
       effectName,
       duration,
-      value,
     };
+    if (value !== undefined) {
+      returnValue.value = value;
+    }
+    return returnValue;
   }
 
   public getActiveStatusEffects(): ReadonlyArray<import('@/core/types/statusEffects.js').StatusEffect> {

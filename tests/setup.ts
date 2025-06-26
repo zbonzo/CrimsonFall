@@ -40,7 +40,7 @@ beforeEach(() => {
   // Reset performance.now for consistent timing in tests
   if (jest.isMockFunction(global.performance.now)) {
     let currentTime = 0;
-    global.performance.now.mockImplementation(() => {
+    (global.performance.now as jest.MockedFunction<() => number>).mockImplementation(() => {
       currentTime += 1; // Each call advances time by 1ms
       return currentTime;
     });

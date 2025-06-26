@@ -6,7 +6,7 @@
  */
 
 import { jest } from '@jest/globals';
-import type { HexCoordinate } from '@/utils/hex/hexCoordinates.js';
+// import type { HexCoordinate } from '@/utils/hex/hexCoordinates.js'; // Unused
 import { createTestHex } from '../helpers/testUtils.js';
 
 // === GAME LOOP SERVICE MOCKS ===
@@ -32,7 +32,7 @@ export const MockGameLoopService = {
    * Mock round processor
    */
   roundProcessor: () => ({
-    processRound: jest.fn().mockResolvedValue({
+    processRound: (jest.fn() as any).mockResolvedValue({
       roundNumber: 1,
       actionResults: [],
       statusEffectResults: { entityUpdates: [] },
@@ -40,8 +40,8 @@ export const MockGameLoopService = {
       winner: null,
       reason: null,
     }),
-    processPlayerActions: jest.fn().mockResolvedValue([]),
-    processMonsterActions: jest.fn().mockResolvedValue([]),
+    processPlayerActions: (jest.fn() as any).mockResolvedValue([]),
+    processMonsterActions: (jest.fn() as any).mockResolvedValue([]),
     processStatusEffects: jest.fn().mockReturnValue({ entityUpdates: [] }),
   }),
 
@@ -96,7 +96,7 @@ export const MockThreatService = {
    */
   withThreatData: (threatData: Record<string, number>) => ({
     ...MockThreatService.basic(),
-    getThreat: jest.fn().mockImplementation((entityId: string) => threatData[entityId] || 0),
+    getThreat: ((jest.fn() as any).mockImplementation((entityId: string) => threatData[entityId] || 0)),
     getTopThreats: jest.fn().mockReturnValue(
       Object.entries(threatData)
         .map(([playerId, threat]) => ({ playerId, threat, playerName: playerId }))
@@ -228,14 +228,14 @@ export const MockActionService = {
    * Action processor mock
    */
   processor: () => ({
-    processAllActions: jest.fn().mockResolvedValue([]),
-    processPlayerAction: jest.fn().mockResolvedValue({
+    processAllActions: (jest.fn() as any).mockResolvedValue([]),
+    processPlayerAction: (jest.fn() as any).mockResolvedValue({
       entityId: 'player1',
       entityName: 'Player',
       actionVariant: 'move',
       success: true,
     }),
-    processMonsterAction: jest.fn().mockResolvedValue({
+    processMonsterAction: (jest.fn() as any).mockResolvedValue({
       entityId: 'monster1',
       entityName: 'Monster',
       actionVariant: 'ai_decision',
@@ -320,16 +320,16 @@ export const MockStatusEffectService = {
    */
   withEffects: (effects: Array<{ name: string; duration: number; value?: number }>) => ({
     ...MockStatusEffectService.manager(),
-    hasStatusEffect: jest.fn().mockImplementation((name: string) =>
+    hasStatusEffect: ((jest.fn() as any).mockImplementation((name: string) =>
       effects.some(e => e.name === name)
-    ),
+    )),
     getActiveEffects: jest.fn().mockReturnValue(effects),
-    getEffectValue: jest.fn().mockImplementation((name: string) =>
+    getEffectValue: ((jest.fn() as any).mockImplementation((name: string) =>
       effects.find(e => e.name === name)?.value || 0
-    ),
-    getEffectDuration: jest.fn().mockImplementation((name: string) =>
+    )),
+    getEffectDuration: ((jest.fn() as any).mockImplementation((name: string) =>
       effects.find(e => e.name === name)?.duration || 0
-    ),
+    )),
   }),
 };
 
@@ -447,12 +447,12 @@ export const MockUtilityService = {
    * Hex coordinate utilities mock
    */
   hexUtils: () => ({
-    createHexCoordinate: jest.fn().mockImplementation((q: number, r: number) => ({ q, r, s: -q - r })),
+    createHexCoordinate: ((jest.fn() as any).mockImplementation((q: number, r: number) => ({ q, r, s: -q - r }))),
     isValidHexCoordinate: jest.fn().mockReturnValue(true),
     calculateHexDistance: jest.fn().mockReturnValue(1),
     getHexNeighbors: jest.fn().mockReturnValue([]),
     hexToDisplayString: jest.fn().mockReturnValue('(0, 0)'),
-    roundHex: jest.fn().mockImplementation((hex: any) => hex),
+    roundHex: ((jest.fn() as any).mockImplementation((hex: any) => hex)),
   }),
 
   /**
@@ -462,7 +462,7 @@ export const MockUtilityService = {
     random: jest.fn().mockReturnValue(0.5),
     randomInt: jest.fn().mockReturnValue(5),
     randomFloat: jest.fn().mockReturnValue(0.5),
-    randomChoice: jest.fn().mockImplementation((array: any[]) => array[0]),
+    randomChoice: ((jest.fn() as any).mockImplementation((array: any[]) => array[0])),
     setSeed: jest.fn(),
   }),
 

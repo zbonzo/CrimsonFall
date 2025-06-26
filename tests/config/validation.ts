@@ -402,12 +402,22 @@ export function validateConfigurationBatch(
         validateMonsterGameRules(file.content as MonsterConfig);
     }
     
-    return {
+    const result: {
+      readonly filename: string;
+      readonly type: 'ability' | 'monster';
+      readonly validation: ValidationResult;
+      readonly gameRules?: ValidationResult;
+    } = {
       filename: file.filename,
       type: file.type,
       validation,
-      gameRules
     };
+    
+    if (gameRules) {
+      (result as any).gameRules = gameRules;
+    }
+    
+    return result;
   });
   
   const validFiles = results.filter(r => r.validation.valid && (!r.gameRules || r.gameRules.valid)).length;
@@ -433,6 +443,7 @@ export function createTestValidationResult(
 ): ValidationResult {
   const errors: ErrorObject[] = errorMessages.map((message, index) => ({
     instancePath: `/test/${index}`,
+    dataPath: `/test/${index}`,
     schemaPath: '#/test',
     keyword: 'test',
     params: {},
@@ -462,11 +473,11 @@ export function validateConfigurationStructure(
   const obj = config as Record<string, any>;
   
   // Check common required fields
-  if (!obj.id || !obj.name || !obj.type) return false;
+  if (!obj['id'] || !obj['name'] || !obj['type']) return false;
   
   if (expectedType === 'ability') {
-    return obj.type !== 'monster' && typeof obj.range === 'number';
+    return obj['type'] !== 'monster' && typeof obj['range'] === 'number';
   } else {
-    return obj.type === 'monster' && obj.stats && typeof obj.stats.maxHp === 'number';
+    return obj['type'] === 'monster' && obj['stats'] && typeof obj['stats']['maxHp'] === 'number';
   }
 }

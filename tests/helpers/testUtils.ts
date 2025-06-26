@@ -94,7 +94,7 @@ export function createTestPlayer(
  */
 export function createTestMonster(
   id: string = 'test_monster',
-  name: string = 'Test Monster',
+  _name: string = 'Test Monster',
   position: HexCoordinate = createTestHex(3, 0),
   configOverrides: any = {}
 ): Monster {

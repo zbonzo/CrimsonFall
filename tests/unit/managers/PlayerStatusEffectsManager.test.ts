@@ -204,8 +204,8 @@ describe('EntityStatusEffectsManager', () => {
 
       expect(result.expired).toHaveLength(0);
       expect(result.effects).toHaveLength(1); // Only poison has per-turn effect
-      expect(result.effects[0].type).toBe('poison_damage');
-      expect(result.effects[0].value).toBe(5);
+      expect(result.effects[0]!.type).toBe('poison_damage');
+      expect(result.effects[0]!.value).toBe(5);
 
       // Check duration reduced
       expect(manager.getEffect('poison')!.duration).toBe(2);
@@ -232,8 +232,8 @@ describe('EntityStatusEffectsManager', () => {
       const result = manager.processRound();
 
       expect(result.effects).toHaveLength(1);
-      expect(result.effects[0].type).toBe('burning_damage');
-      expect(result.effects[0].value).toBe(8);
+      expect(result.effects[0]!.type).toBe('burning_damage');
+      expect(result.effects[0]!.value).toBe(8);
     });
 
     it('should process regeneration healing', () => {
@@ -243,8 +243,8 @@ describe('EntityStatusEffectsManager', () => {
       const result = manager.processRound();
 
       expect(result.effects).toHaveLength(1);
-      expect(result.effects[0].type).toBe('regeneration_heal');
-      expect(result.effects[0].value).toBe(6);
+      expect(result.effects[0]!.type).toBe('regeneration_heal');
+      expect(result.effects[0]!.value).toBe(6);
     });
 
     it('should process stacked effect values', () => {
@@ -255,11 +255,11 @@ describe('EntityStatusEffectsManager', () => {
       const result = manager.processRound();
 
       expect(result.effects).toHaveLength(1);
-      expect(result.effects[0].type).toBe('poison_damage');
+      expect(result.effects[0]!.type).toBe('poison_damage');
 
       // Skip specific value testing until stacking system is redesigned
       // TODO: Define how stacked damage values should be calculated
-      expect(result.effects[0].value).toBeGreaterThan(0);
+      expect(result.effects[0]!.value).toBeGreaterThan(0);
     });
   });
 

@@ -44,7 +44,7 @@ describe('Hex Coordinate Utilities', () => {
     });
 
     it('should always maintain q + r + s = 0 constraint', () => {
-      const testCases = [
+      const testCases: [number, number][] = [
         [0, 0], [1, 0], [0, 1], [-1, 1], [5, -3], [-10, 7]
       ];
 

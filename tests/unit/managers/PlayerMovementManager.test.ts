@@ -86,20 +86,20 @@ describe('EntityMovementManager', () => {
 
     test('should validate position availability correctly', () => {
       const manager = createMovementManager();
-      const obstacles = createObstacleSet([ADJACENT_POSITIONS[0]]);
-      const occupied = createOccupiedSet([ADJACENT_POSITIONS[1]]);
+      const obstacles = createObstacleSet([ADJACENT_POSITIONS[0]!]);
+      const occupied = createOccupiedSet([ADJACENT_POSITIONS[1]!]);
 
       // Free position should be valid
-      const result1 = manager.isPositionValid(ADJACENT_POSITIONS[2]);
+      const result1 = manager.isPositionValid(ADJACENT_POSITIONS[2]!);
       expect(result1.valid).toBe(true);
 
       // Obstacle position should be invalid
-      const result2 = manager.isPositionValid(ADJACENT_POSITIONS[0], new Set(), obstacles);
+      const result2 = manager.isPositionValid(ADJACENT_POSITIONS[0]!, new Set(), obstacles);
       expect(result2.valid).toBe(false);
       expect(result2.reason).toBe('Position is blocked by obstacle');
 
       // Occupied position should be invalid
-      const result3 = manager.isPositionValid(ADJACENT_POSITIONS[1], occupied);
+      const result3 = manager.isPositionValid(ADJACENT_POSITIONS[1]!, occupied);
       expect(result3.valid).toBe(false);
       expect(result3.reason).toBe('Position is occupied');
     });
@@ -111,7 +111,7 @@ describe('EntityMovementManager', () => {
       expect(manager.canMove().allowed).toBe(true);
 
       // After moving, should not be able to move again
-      manager.moveTo(ADJACENT_POSITIONS[0]);
+      manager.moveTo(ADJACENT_POSITIONS[0]!);
       expect(manager.canMove().allowed).toBe(false);
       expect(manager.canMove().reason).toBe('Already moved this round');
     });
@@ -120,7 +120,7 @@ describe('EntityMovementManager', () => {
   describe('movement execution', () => {
     test('should execute valid movement correctly', () => {
       const manager = createMovementManager();
-      const targetPos = ADJACENT_POSITIONS[0];
+      const targetPos = ADJACENT_POSITIONS[0]!;
 
       const result = manager.moveTo(targetPos);
 
@@ -134,13 +134,13 @@ describe('EntityMovementManager', () => {
 
     test('should reject movement when already moved', () => {
       const manager = createMovementManager();
-      manager.moveTo(ADJACENT_POSITIONS[0]);
+      manager.moveTo(ADJACENT_POSITIONS[0]!);
 
-      const result = manager.moveTo(ADJACENT_POSITIONS[1]);
+      const result = manager.moveTo(ADJACENT_POSITIONS[1]!);
 
       expect(result.success).toBe(false);
       expect(result.reason).toBe('Already moved this round');
-      expect(manager.currentPosition).toEqual(ADJACENT_POSITIONS[0]);
+      expect(manager.currentPosition).toEqual(ADJACENT_POSITIONS[0]!);
     });
 
     test('should reject movement outside range', () => {
@@ -156,9 +156,9 @@ describe('EntityMovementManager', () => {
 
     test('should reject movement to occupied position', () => {
       const manager = createMovementManager();
-      const occupied = createOccupiedSet([ADJACENT_POSITIONS[0]]);
+      const occupied = createOccupiedSet([ADJACENT_POSITIONS[0]!]);
 
-      const result = manager.moveTo(ADJACENT_POSITIONS[0], occupied);
+      const result = manager.moveTo(ADJACENT_POSITIONS[0]!, occupied);
 
       expect(result.success).toBe(false);
       expect(result.reason).toBe('Position is occupied');
@@ -172,7 +172,7 @@ describe('EntityMovementManager', () => {
       const manager = createMovementManager();
 
       // Distance to adjacent should be 1
-      const distanceToAdjacent = manager.getDistanceTo(ADJACENT_POSITIONS[0]);
+      const distanceToAdjacent = manager.getDistanceTo(ADJACENT_POSITIONS[0]!);
       expect(distanceToAdjacent).toBe(1);
 
       // Distance to near position should be 3
@@ -184,24 +184,24 @@ describe('EntityMovementManager', () => {
       const manager = createMovementManager();
 
       expect(manager.isAtPosition(ORIGIN)).toBe(true);
-      expect(manager.isAtPosition(ADJACENT_POSITIONS[0])).toBe(false);
+      expect(manager.isAtPosition(ADJACENT_POSITIONS[0]!)).toBe(false);
 
       // After moving
-      manager.moveTo(ADJACENT_POSITIONS[0]);
+      manager.moveTo(ADJACENT_POSITIONS[0]!);
       expect(manager.isAtPosition(ORIGIN)).toBe(false);
-      expect(manager.isAtPosition(ADJACENT_POSITIONS[0])).toBe(true);
+      expect(manager.isAtPosition(ADJACENT_POSITIONS[0]!)).toBe(true);
     });
 
     test('should reset movement state for new round', () => {
       const manager = createMovementManager();
-      manager.moveTo(ADJACENT_POSITIONS[0]);
+      manager.moveTo(ADJACENT_POSITIONS[0]!);
 
       expect(manager.hasMovedThisRound).toBe(true);
 
       manager.resetForNewRound();
 
       expect(manager.hasMovedThisRound).toBe(false);
-      expect(manager.currentPosition).toEqual(ADJACENT_POSITIONS[0]); // Position preserved
+      expect(manager.currentPosition).toEqual(ADJACENT_POSITIONS[0]!); // Position preserved
     });
   });
 });

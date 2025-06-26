@@ -263,7 +263,7 @@ export class EntityStatusEffectsManager {
     return !this.hasEffect('invisible');
   }
 
-  public getDamageModifier(): number {
+  public getDamageModifier(_baseDamage?: number): number {
     let modifier = 1.0;
 
     if (this.hasEffect('enraged')) {
@@ -276,6 +276,7 @@ export class EntityStatusEffectsManager {
       modifier *= 1 - (effect?.value || 25) / 100;
     }
 
+    // Always return just the modifier, let the caller do the multiplication
     return modifier;
   }
 
@@ -290,7 +291,7 @@ export class EntityStatusEffectsManager {
     return modifier;
   }
 
-  public getHealingModifier(): number {
+  public getHealingModifier(_baseHealing?: number): number {
     let modifier = 1.0;
 
     if (this.hasEffect('blessed')) {
@@ -303,6 +304,7 @@ export class EntityStatusEffectsManager {
       modifier *= 1 - (effect?.value || 50) / 100;
     }
 
+    // Always return just the modifier, let the caller do the multiplication
     return modifier;
   }
 

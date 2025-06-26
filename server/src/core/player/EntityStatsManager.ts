@@ -106,6 +106,10 @@ export class EntityStatsManager {
     return this._currentHp > 0;
   }
 
+  public getIsAlive(): boolean {
+    return this._currentHp > 0;
+  }
+
   public get hpPercentage(): number {
     return this._currentHp / this.maxHp;
   }
@@ -136,7 +140,7 @@ export class EntityStatsManager {
     };
   }
 
-  public heal(amount: number): HealResult {
+  public heal(amount: number, _source?: string): HealResult {
     if (!this.isAlive) {
       return { amountHealed: 0, newHp: this._currentHp };
     }

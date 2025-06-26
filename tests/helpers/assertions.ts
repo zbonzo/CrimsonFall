@@ -267,7 +267,7 @@ function toBeAbleToAttack(this: jest.MatcherContext, received: Player | Monster,
       pass: true,
     };
   } else {
-    const reasons = [];
+    const reasons: string[] = [];
     if (!canAct) reasons.push('cannot act');
     if (!targetAlive) reasons.push('target is dead');
     if (!inRange) reasons.push('out of range');
@@ -285,8 +285,8 @@ function toBeAbleToAttack(this: jest.MatcherContext, received: Player | Monster,
 /**
  * Validates that an async operation completes within a time limit
  */
-function toCompleteWithin(this: jest.MatcherContext, received: Promise<any>, maxTimeMs: number) {
-  return new Promise((resolve) => {
+function toCompleteWithin(this: jest.MatcherContext, received: Promise<any>, maxTimeMs: number): Promise<jest.CustomMatcherResult> {
+  return new Promise<jest.CustomMatcherResult>((resolve) => {
     const startTime = performance.now();
     
     received

@@ -10,7 +10,8 @@
       "Bash(sed:*)",
       "Bash(npx tsc:*)",
       "Bash(ls:*)",
-      "Bash(rg:*)"
+      "Bash(rg:*)",
+      "Bash(npx jest:*)"
     ],
     "deny": []
   }

@@ -322,4 +322,8 @@ export class EntityAbilitiesManager {
       (ability.variant === 'defense' && ability.range > 0)
     );
   }
+
+  public getAvailableAbilities(): ReadonlyArray<AbilityDefinition> {
+    return this.availableAbilities;
+  }
 }

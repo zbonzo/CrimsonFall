@@ -106,13 +106,24 @@ export class GameLoop {
     this._stateManager.startGame();
   }
 
-  public processRound(): RoundResult {
+  public async processRound(): Promise<RoundResult> {
     if (this.gameState.phase !== 'playing') {
-      throw new Error('Game is not in playing phase');
+      return {
+        roundNumber: 0,
+        actionResults: [],
+        statusEffectResults: { entityUpdates: [] },
+        gameEnded: false,
+      };
     }
 
     if (this.isGameEnded) {
-      throw new Error('Game has already ended');
+      return {
+        roundNumber: this.currentRound,
+        actionResults: [],
+        statusEffectResults: { entityUpdates: [] },
+        gameEnded: true,
+        winner: this.winner || undefined,
+      };
     }
 
     // 1. Check for game end conditions before processing
@@ -125,12 +136,10 @@ export class GameLoop {
     this.processMonsterAI();
 
     // 3. Process all actions in priority order
-    const actionResults: ActionResult[] = [];
-    // For now, return empty results - real processing would happen here
-    // const actionResults = await this._actionProcessor.processAllActions(
-    //   this._stateManager.getAlivePlayers(),
-    //   this._stateManager.getAliveMonsters()
-    // );
+    const actionResults = await this._actionProcessor.processAllActions(
+      this._stateManager.getAlivePlayers(),
+      this._stateManager.getAliveMonsters()
+    );
 
     // 4. Process status effects and cooldowns
     const statusEffectResults = this._stateManager.processStatusEffects();
@@ -153,15 +162,28 @@ export class GameLoop {
 
     this._roundHistory.push(roundResult);
 
-    // 8. End game or advance to next round
+    // 8. Advance to next round first
+    this._stateManager.advanceToNextRound();
+
+    // 9. End game or continue
     if (postRoundCheck.gameEnded) {
       this.endGame(postRoundCheck.winner, postRoundCheck.reason);
+      return {
+        ...roundResult,
+        gameEnded: true,
+        winner: postRoundCheck.winner,
+        reason: postRoundCheck.reason,
+      };
     } else {
       const maxRoundCheck = this._stateManager.checkMaxRounds(this._config.maxRounds);
       if (maxRoundCheck.gameEnded) {
         this.endGame(maxRoundCheck.winner, maxRoundCheck.reason);
-      } else {
-        this._stateManager.advanceToNextRound();
+        return {
+          ...roundResult,
+          gameEnded: true,
+          winner: maxRoundCheck.winner,
+          reason: maxRoundCheck.reason,
+        };
       }
     }
 
@@ -311,7 +333,7 @@ export class GameLoop {
     if (result.success) {
       return { success: true, action };
     } else {
-      return { success: false, error: result.reason };
+      return { success: false, error: result.reason || 'Unknown error' };
     }
   }
 
